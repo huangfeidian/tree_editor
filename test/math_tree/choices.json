@@ -1,0 +1,21 @@
+{
+    "reduce_ops":
+    [
+        {
+            "name": "max",
+            "desc": "return the max value"
+        },
+        {
+            "name": "min",
+            "desc": "return the min value"
+        },
+        {
+            "name": "sum",
+            "desc": "return the sum value"
+        },
+        {
+            "name": "multiply",
+            "desc": "return the multiply value"
+        }
+    ]
+}

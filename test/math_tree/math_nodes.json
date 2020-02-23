@@ -1,0 +1,57 @@
+{
+    "add": {
+        "child_min": 2,
+        "child_max": 2,
+        "editable_items": {
+
+        }
+    },
+    "dec": {
+        "child_min": 2,
+        "child_max": 2,
+        "editable_items": {
+
+        }
+    },
+    "mul": {
+        "child_min": 2,
+        "child_max": 2
+    },
+    "div": {
+        "child_min": 2,
+        "child_max": 2,
+        "editable_items": {
+
+        }
+    },
+    "neg": {
+        "comment": "nagative of value",
+        "child_min": 1,
+        "child_max": 1
+    },
+    "literal":{
+        "child_min": 0,
+        "child_max": 0,
+        "comment": "a number value",
+        "editable_item": {
+            "name": "value",
+            "type": "_float"
+        }
+
+    },
+    "reduce": {
+        "child_min": 1,
+        "child_max": 20,
+        "comment": "to reduce values of children",
+        "editable_item": {
+            "name": "reduce_operator",
+            "type": "_choice",
+            "choice_type": "reduce_op"
+        }
+    },
+    "root": {
+        "child_min": 1,
+        "child_max": 1
+    }
+
+}
