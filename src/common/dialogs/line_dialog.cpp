@@ -1,4 +1,4 @@
-﻿#include <dialogs/line_dialog.h>
+﻿#include <tree_editor/common/dialogs/line_dialog.h>
 
 using namespace spiritsaway::tree_editor;
 line_dialog::line_dialog(std::string title, std::string init_text, QWidget* parent)

@@ -8,7 +8,7 @@
 
 #include <QStringListModel>
 
-#include <dialogs/editable_item.h>
+#include <tree_editor/common/dialogs/editable_item.h>
 
 namespace spiritsaway::tree_editor
 {

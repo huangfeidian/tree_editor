@@ -12,10 +12,10 @@
 #include "log_item.h"
 #include "log_tree_model.h"
 
-namespace spiritsaway::tree_editor
+namespace spiritsaway::behavior_tree::editor
 {
 	using namespace spiritsaway;
-	using spiritsaway::tree_editor::common::debug_mode;
+	using spiritsaway::behavior_tree::common::debug_mode;
 	class debugger_main_window;
 	class log_dialog: public QWidget
 	{

@@ -2,11 +2,11 @@
 
 #include <qcolordialog.h>
 #include <qgraphicssceneevent.h>
-#include <graph/node_graph.h>
-#include <graph/tree_instance.h>
-#include <dialogs/info_dialog.h>
-#include <dialogs/editable_dialog.h>
-#include <dialogs/line_dialog.h>
+#include <tree_editor/common/graph/node_graph.h>
+#include <tree_editor/common/graph/tree_instance.h>
+#include <tree_editor/common/dialogs/info_dialog.h>
+#include <tree_editor/common/dialogs/editable_dialog.h>
+#include <tree_editor/common/dialogs/line_dialog.h>
 
 
 

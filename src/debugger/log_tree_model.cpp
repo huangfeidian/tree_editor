@@ -5,7 +5,7 @@
 
 #include <QtWidgets>
 
-using namespace  spiritsaway::tree_editor;
+using namespace  spiritsaway::behavior_tree::editor;
 //! [0]
 log_tree_model::log_tree_model(const std::vector<std::pair<QString, Qt::ItemFlags>>& headers, QObject *parent)
     : QAbstractItemModel(parent)

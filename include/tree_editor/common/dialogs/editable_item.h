@@ -61,6 +61,7 @@ namespace spiritsaway::tree_editor
 		editable_item(editable_item_type _in_type, bool _in_is_container,
 			const std::string& _in_name);
 		static std::shared_ptr<editable_item> from_json(const json& data);
+		virtual std::shared_ptr<editable_item> clone() const;
 
 	};
 
@@ -72,6 +73,7 @@ namespace spiritsaway::tree_editor
 		QWidget* to_editor( modify_callback_func_t modify_callback);
 		QWidget* to_dialog();
 		static std::shared_ptr<text_browser> from_json(const json& data);
+		std::shared_ptr<editable_item> clone() const;
 	};
 	class line_text : public editable_item
 	{
@@ -84,6 +86,7 @@ namespace spiritsaway::tree_editor
 		std::string input_valid() const;
 		bool assign(const json& other);
 		virtual json str_convert(const QString& input) const = 0;
+		std::shared_ptr<editable_item> clone() const;
 	};
 
 	class single_line : public line_text
@@ -93,6 +96,7 @@ namespace spiritsaway::tree_editor
 		single_line(const std::string& _in_name, const std::string& _in_value);
 		json str_convert(const QString& input) const;
 		static std::shared_ptr<single_line> from_json(const json& data);
+		std::shared_ptr<editable_item> clone() const;
 	};
 
 	class multi_line :public line_text
@@ -104,6 +108,7 @@ namespace spiritsaway::tree_editor
 		json str_convert(const QString& input) const;
 		QWidget* to_editor( modify_callback_func_t modify_callback);
 		static std::shared_ptr<multi_line> from_json(const json& data);
+		std::shared_ptr<editable_item> clone() const;
 	};
 	class multi_line_widget : public QPlainTextEdit
 	{
@@ -130,6 +135,7 @@ namespace spiritsaway::tree_editor
 		std::string input_valid() const;
 		bool assign(const json& other);
 		static std::shared_ptr<bool_item> from_json(const json& data);
+		std::shared_ptr<editable_item> clone() const;
 
 	};
 
@@ -143,6 +149,7 @@ namespace spiritsaway::tree_editor
 		std::string input_valid() const;
 		bool assign(const json& other);
 		static std::shared_ptr<color_item> from_json(const json& data);
+		std::shared_ptr<editable_item> clone() const;
 	};
 	class int_item :public line_text
 	{
@@ -154,6 +161,7 @@ namespace spiritsaway::tree_editor
 		virtual json str_convert(const QString& input) const;
 		static std::shared_ptr<int_item> from_json(const json& data);
 		QWidget* int_item::to_editor( modify_callback_func_t modify_callback);
+		std::shared_ptr<editable_item> clone() const;
 	};
 
 	class float_item :public line_text
@@ -166,6 +174,7 @@ namespace spiritsaway::tree_editor
 		virtual json str_convert(const QString& input) const;
 		static std::shared_ptr<float_item> from_json(const json& data);
 		QWidget* float_item::to_editor( modify_callback_func_t modify_callback);
+		std::shared_ptr<editable_item> clone() const;
 	};
 	class json_item : public line_text
 	{
@@ -177,6 +186,7 @@ namespace spiritsaway::tree_editor
 		virtual json str_convert(const QString& input) const;
 		static std::shared_ptr<json_item> from_json(const json& data);
 		QWidget* json_item::to_editor( modify_callback_func_t modify_callback);
+		std::shared_ptr<editable_item> clone() const;
 	};
 	class choice_item : public editable_item
 	{
@@ -199,6 +209,7 @@ namespace spiritsaway::tree_editor
 		const std::vector<std::string> _choices;
 		const std::vector<std::string> _choice_text;
 		const std::string _choice_type;
+		std::shared_ptr<editable_item> clone() const;
 	};
 
 
@@ -217,6 +228,7 @@ namespace spiritsaway::tree_editor
 		static std::shared_ptr<list_items> from_json(const json& data);
 		json to_json() const;
 		std::string input_valid() const;
+		std::shared_ptr<editable_item> clone() const;
 	};
 	class struct_items : public editable_item
 	{
@@ -233,5 +245,6 @@ namespace spiritsaway::tree_editor
 		QWidget* to_editor( modify_callback_func_t modify_callback);
 		QWidget* to_dialog();
 		std::string input_valid() const;
+		std::shared_ptr<editable_item> clone() const;
 	};
 }

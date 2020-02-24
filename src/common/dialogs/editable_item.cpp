@@ -15,9 +15,9 @@
 
 #include <iostream>
 
-#include <choice_manager.h>
-#include <dialogs/editable_item.h>
-#include <dialogs/search_select_dialog.h>
+#include <tree_editor/common/choice_manager.h>
+#include <tree_editor/common/dialogs/editable_item.h>
+#include <tree_editor/common/dialogs/search_select_dialog.h>
 #include <magic_enum.hpp>
 using namespace spiritsaway::tree_editor;
 
@@ -89,7 +89,10 @@ json editable_item::to_json() const
 	result["value"] = _value;
 	return result;
 }
-
+std::shared_ptr<editable_item> editable_item::clone() const
+{
+	return {};
+}
 QWidget* text_browser::to_editor(modify_callback_func_t modify_callback)
 {
 	return to_dialog();
@@ -101,6 +104,11 @@ QWidget* text_browser::to_dialog()
 	cur_window->setText(cur_qstr);
 	cur_window->setWordWrap(true);
 	return cur_window;
+}
+std::shared_ptr<editable_item> text_browser::clone() const
+{
+	auto result = std::make_shared<text_browser>(_name, _value.get<std::string>());
+	return result;
 }
 std::shared_ptr<text_browser> text_browser::from_json(const json& data)
 {
@@ -159,6 +167,10 @@ json line_text::to_json() const
 	return editable_item::to_json();
 }
 
+std::shared_ptr<editable_item> line_text::clone() const
+{
+	return {};
+}
 QWidget* line_text::to_editor(modify_callback_func_t modify_callback)
 {
 	auto cur_window = new QLineEdit();
@@ -213,6 +225,11 @@ std::shared_ptr<single_line> single_line::from_json(const json& data)
 	return std::make_shared<single_line>(name_iter->get<std::string>(), 
 		value_iter->get<std::string>());
 }
+std::shared_ptr<editable_item> single_line::clone() const
+{
+	auto result = std::make_shared<single_line>(_name, _value.get<std::string>());
+	return result;
+}
 json multi_line::str_convert(const QString& input) const
 {
 	return input.toStdString();
@@ -245,6 +262,11 @@ std::shared_ptr<multi_line> multi_line::from_json(const json& data)
 
 	return std::make_shared<multi_line>(name_iter->get<std::string>(),
 		value_iter->get<std::string>());
+}
+std::shared_ptr<editable_item> multi_line::clone() const
+{
+	auto result = std::make_shared<multi_line>(_name, _value.get<std::string>());
+	return result;
 }
 QWidget* multi_line::to_editor(modify_callback_func_t modify_callback)
 {
@@ -305,6 +327,11 @@ std::shared_ptr<bool_item> bool_item::from_json(const json& data)
 
 	return std::make_shared<bool_item>(name_iter->get<std::string>(),
 		value_iter->get<bool>());
+}
+std::shared_ptr<editable_item> bool_item::clone() const
+{
+	auto result = std::make_shared<bool_item>(_name, _value.get<bool>());
+	return result;
 }
 QWidget* bool_item::to_editor(modify_callback_func_t modify_callback)
 {
@@ -373,6 +400,11 @@ std::shared_ptr<color_item> color_item::from_json(const json& data)
 
 	return std::make_shared<color_item>(name_iter->get<std::string>(),
 		value_iter->get<std::uint32_t>());
+}
+std::shared_ptr<editable_item> color_item::clone() const
+{
+	auto result = std::make_shared<color_item>(_name, _value.get<std::uint32_t>());
+	return result;
 }
 QWidget* color_item::to_editor(modify_callback_func_t modify_callback)
 {
@@ -460,6 +492,11 @@ std::shared_ptr<int_item> int_item::from_json(const json& data)
 	return std::make_shared<int_item>(name_iter->get<std::string>(),
 		value_iter->get<std::int32_t>());
 }
+std::shared_ptr<editable_item> int_item::clone() const
+{
+	auto result = std::make_shared<int_item>(_name, _value.get<std::int32_t>());
+	return result;
+}
 bool int_item::assign(const json& other)
 {
 	if (!other.is_number_integer())
@@ -544,6 +581,12 @@ std::shared_ptr<float_item> float_item::from_json(const json& data)
 	return std::make_shared<float_item>(name_iter->get<std::string>(),
 		value_iter->get<double>());
 }
+std::shared_ptr<editable_item> float_item::clone() const
+{
+	auto result = std::make_shared<float_item>(_name, _value.get<double>());
+	return result;
+}
+
 json float_item::str_convert(const QString& input) const
 {
 	bool ok;
@@ -618,6 +661,12 @@ std::shared_ptr<json_item> json_item::from_json(const json& data)
 	return std::make_shared<json_item>(name_iter->get<std::string>(),
 		*value_iter);
 }
+std::shared_ptr<editable_item> json_item::clone() const
+{
+	auto result = std::make_shared<json_item>(_name, _value);
+	return result;
+}
+
 json json_item::str_convert(const QString& input) const
 {
 	auto cur_str = input.toStdString();
@@ -748,6 +797,13 @@ std::shared_ptr<choice_item> choice_item::from_json(const json& data)
 	return std::make_shared<choice_item>(name_iter->get<std::string>(),
 		cur_choice_type, *choice_ptrs.first, *choice_ptrs.second, cur_value);
 }
+std::shared_ptr<editable_item> choice_item::clone() const
+{
+	auto result = std::make_shared<choice_item>(_name, _choice_type, _choices, _choice_text, _value.get<std::string>());
+	return result;
+}
+
+
 bool choice_item::assign(const json& data)
 {
 	//std::cout << "choice item begin set with value " << data.dump() << std::endl;
@@ -1011,6 +1067,16 @@ std::shared_ptr<list_items> list_items::from_json(const json& data)
 	}
 	return temp;
 }
+std::shared_ptr<editable_item> list_items::clone() const
+{
+	auto result = std::make_shared<list_items>(_name, item_base);
+	for (const auto& one_item : _children)
+	{
+		result->_children.push_back(one_item->clone());
+	}
+	return result;
+}
+
 json struct_items::to_json() const
 {
 	auto result = editable_item::to_json();
@@ -1166,6 +1232,16 @@ std::shared_ptr<struct_items> struct_items::from_json(const json& data)
 	}
 	return temp;
 }
+std::shared_ptr<editable_item> struct_items::clone() const
+{
+	auto result = std::make_shared<struct_items>(_name);
+	for (auto one_child : _children)
+	{
+		result->_children.push_back(one_child->clone());
+	}
+	return result;
+}
+
 std::string struct_items::input_valid() const
 {
 	for (const auto& one_child : _children)

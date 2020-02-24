@@ -13,7 +13,7 @@
 #include <qmessagebox.h>
 #include <filesystem>
 #include <QCloseEvent>
-#include <logger.h>
+#include <tree_editor/common/logger.h>
 #include <http_server/http_server.h>
 
 using json = nlohmann::json;
@@ -57,7 +57,9 @@ namespace spiritsaway::tree_editor
 		void action_close_all_handler();
 		void action_find_handler();
 		void action_goto_handler();
-		virtual void action_open_handler();
+		void action_open_handler();
+	protected:
+		virtual std::string action_open_impl();
 
 	};
 }

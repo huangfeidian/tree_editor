@@ -12,7 +12,7 @@
 #include "log_dialog.h"
 #include "../debugger_main_window.h"
 
-using namespace spiritsaway::tree_editor;
+using namespace spiritsaway::behavior_tree::editor;
 namespace
 {
 	std::string format_timepoint(std::uint64_t milliseconds_since_epoch)

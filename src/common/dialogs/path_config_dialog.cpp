@@ -1,5 +1,4 @@
-﻿#include <dialogs/path_config_dialog.h>
-#include <qfiledialog.h>
+﻿#include <qfiledialog.h>
 #include <qmessagebox.h>
 #include <qevent.h>
 #include <qformlayout.h>
@@ -8,6 +7,8 @@
 #include <qpushbutton.h>
 #include <nlohmann/json.hpp>
 #include <fstream>
+
+#include <tree_editor/common/dialogs/path_config_dialog.h>
 
 using namespace std;
 using namespace spiritsaway::tree_editor;
@@ -24,9 +25,11 @@ path_config_dialog::path_config_dialog(const std::vector<path_req_desc>& _in_pat
 	{
 		auto cur_label = new QLabel("");
 		cur_label->setMinimumWidth(80);
+		cur_label->sizePolicy().setHorizontalStretch(2);
+		cur_label->sizePolicy().setHorizontalPolicy(QSizePolicy::Maximum);
 		auto cur_button = new QPushButton("Select");
 		auto cur_layout = new QHBoxLayout();
-		cur_layout->addWidget(cur_label);
+		cur_layout->addWidget(cur_label, 2);
 		cur_layout->addWidget(cur_button);
 		connect(cur_button, &QPushButton::clicked, this, [this, i]()
 		{
@@ -41,6 +44,7 @@ path_config_dialog::path_config_dialog(const std::vector<path_req_desc>& _in_pat
 	connect(cur_button, &QPushButton::clicked, this, &path_config_dialog::confirm_handler);
 	formLayout->addRow(cur_button);
 	setLayout(formLayout);
+	setMinimumWidth(600);
 }
 
 void path_config_dialog::confirm_handler()

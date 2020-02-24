@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 
-#include <graph/multi_instance_window.h>
+#include <tree_editor/common/graph/multi_instance_window.h>
 QT_BEGIN_NAMESPACE
 namespace Ui { class editor_main_window; }
 QT_END_NAMESPACE
@@ -42,12 +42,12 @@ public slots:
 
 	void closeEvent(QCloseEvent* e);
 	// file actions
-	virtual void action_new_handler();
+	void action_new_handler();
 	void action_save_handler();
 	void action_save_all_handler();
-	virtual void action_export_handler();
-	virtual void action_export_all_handler();
-	virtual void action_save_as_handler();
+	void action_export_handler();
+	void action_export_all_handler();
+	void action_save_as_handler();
 	// node actions
 	void action_insert_handler();
 	void action_del_handler();
@@ -56,5 +56,7 @@ public slots:
 	void action_copy_handler();
 	void action_paste_handler();
 	void action_cut_handler();
+protected:
+	virtual std::string action_new_impl();
 };
 

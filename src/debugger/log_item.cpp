@@ -1,7 +1,7 @@
 #include "log_item.h"
 
 using namespace std;
-using namespace spiritsaway::tree_editor;
+using namespace spiritsaway::behavior_tree::editor;
 
 log_item::log_item(const QVector<QVariant> &data, log_item *parent)
     : itemData(data),

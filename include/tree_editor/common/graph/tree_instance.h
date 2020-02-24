@@ -61,14 +61,15 @@ namespace spiritsaway::tree_editor
 		void select_changed(node_graph* cur_node, int state);
 		void show_select_effect(basic_node* cur_node);
 		void clean_select_effect(basic_node* cur_node);
-		void insert_handler();
-		void delete_handler();
+		virtual void insert_handler();
+		virtual void delete_handler();
 		basic_node* copy_handler();
 		void paste_handler(basic_node* cur_node);
 		basic_node* cut_handler();
 		void move_handler(bool is_up);
 		std::uint32_t next_node_seq();
-		std::string save_handler();
+		virtual std::string save_handler();
+		virtual std::string export_handler();
 		void deactivate_handler();
 		void activate_handler();
 		void set_scene_background();

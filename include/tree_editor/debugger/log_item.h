@@ -4,7 +4,7 @@
 #include <QVector>
 
 //! [0]
-namespace spiritsaway::tree_editor
+namespace spiritsaway::behavior_tree::editor
 {
     class log_item
 {

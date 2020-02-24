@@ -13,18 +13,15 @@
 //#include <QSvgGenerator>
 //#include <QSvgRenderer>
 
-#include <graph/tree_instance.h>
-#include <graph/basic_node.h>
-#include <dialogs/search_select_dialog.h>
-#include <choice_manager.h>
-#include <dialogs/editable_item.h>
+#include <tree_editor/common/graph/tree_instance.h>
+#include <tree_editor/common/graph/basic_node.h>
+#include <tree_editor/common/dialogs/search_select_dialog.h>
+#include <tree_editor/common/choice_manager.h>
+#include <tree_editor/common/dialogs/editable_item.h>
 
-#include <behavior/nodes.h>
-#include <btree/btree_node.h>
 
 
 using namespace spiritsaway::tree_editor;
-using btree_node_type = spiritsaway::tree_editor::common::node_type;
 
 tree_view::tree_view(QGraphicsScene* in_scene, tree_instance* in_graph_mgr)
 	: QGraphicsView(in_scene)
@@ -338,20 +335,10 @@ void tree_instance::insert_handler()
 	{
 		return;
 	}
-	auto cur_type_opt = magic_enum::enum_cast<btree_node_type>(cur_choice);
-	if (!cur_type_opt.has_value())
-	{
-		return;
-	}
-	auto cur_type = cur_type_opt.value();
-	if (cur_type == btree_node_type::invalid)
-	{
-		return;
-	}
 	auto new_idx = next_node_seq();
 	_logger->debug("tree_instance {} get  new node idx {}",
 		file_name.string(), new_idx);
-	auto cur_new_node = _root->create_node(std::string(magic_enum::enum_name(cur_type)), selected_node, new_idx);
+	auto cur_new_node = _root->create_node(cur_choice, selected_node, new_idx);
 	cur_new_node->refresh_editable_items();
 	_logger->debug("tree_instance {} create new node",
 		file_name.string());
@@ -576,6 +563,10 @@ std::string tree_instance::save_handler()
 	return invalid_info;
 }
 
+std::string tree_instance::export_handler()
+{
+	return save_handler();
+}
 void tree_instance::deactivate_handler()
 {
 	_logger->debug("tree_instance {} deactivate_handler ",

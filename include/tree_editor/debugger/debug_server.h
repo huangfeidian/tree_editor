@@ -6,7 +6,7 @@
 #include <behavior/btree_trace.h>
 #include <any_container/decode.h>
 
-namespace spiritsaway::tree_editor
+namespace spiritsaway::behavior_tree::editor
 {
 	using namespace spiritsaway::http;
 	class debug_connection : public spiritsaway::http::http_connection

@@ -14,8 +14,8 @@
 #include "debugger_main_window.h"
 #include "log_viewer/log_dialog.h"
 
-using namespace spiritsaway::tree_editor;
-using namespace spiritsaway::tree_editor::common;
+using namespace spiritsaway::behavior_tree::editor;
+using namespace spiritsaway::behavior_tree::common;
 
 debugger_main_window::debugger_main_window(QWidget* parent)
 	: multi_instance_window(parent)
@@ -83,7 +83,7 @@ void debugger_main_window::init_actions()
 }
 bool debugger_main_window::focus_on(const std::string& tree_name, std::uint32_t node_idx)
 {
-	const auto& cur_btree_config = spiritsaway::tree_editor::btree_config::instance();
+	const auto& cur_btree_config = spiritsaway::behavior_tree::editor::btree_config::instance();
 	std::filesystem::path cur_file_path = cur_btree_config.btree_folder / tree_name;
 	std::string cur_file_path_str = cur_file_path.string();
 	auto opt_ins_idx = already_open(cur_file_path_str);
@@ -107,7 +107,7 @@ bool debugger_main_window::focus_on(const std::string& tree_name, std::uint32_t 
 }
 bool debugger_main_window::node_has_breakpoint(const std::string& tree_name, std::uint32_t node_idx) const
 {
-	const auto& cur_btree_config = spiritsaway::tree_editor::btree_config::instance();
+	const auto& cur_btree_config = spiritsaway::behavior_tree::editor::btree_config::instance();
 	std::filesystem::path cur_file_path = cur_btree_config.btree_folder / tree_name;
 	std::string cur_file_path_str = cur_file_path.string();
 	auto opt_ins_idx = already_open(cur_file_path_str);
@@ -132,7 +132,7 @@ bool debugger_main_window::node_has_breakpoint(const std::string& tree_name, std
 }
 void debugger_main_window::highlight_node(const std::string& tree_name, std::uint32_t node_idx, QColor color)
 {
-	const auto& cur_btree_config = spiritsaway::tree_editor::btree_config::instance();
+	const auto& cur_btree_config = spiritsaway::behavior_tree::editor::btree_config::instance();
 	std::filesystem::path cur_file_path = cur_btree_config.btree_folder / tree_name;
 	std::string cur_file_path_str = cur_file_path.string();
 	auto opt_ins_idx = already_open(cur_file_path_str);

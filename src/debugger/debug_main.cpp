@@ -24,7 +24,7 @@
 #include "debugger_main_window.h"
 
 using namespace std;
-using namespace spiritsaway::tree_editor;
+using namespace spiritsaway::behavior_tree::editor;
 using namespace spiritsaway;
 
 int main(int argc, char *argv[])

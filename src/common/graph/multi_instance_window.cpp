@@ -1,8 +1,8 @@
-﻿#include <graph/multi_instance_window.h>
-#include <graph/tree_instance.h>
-#include <dialogs/config_dialog.h>
-#include <choice_manager.h>
-#include <dialogs/line_dialog.h>
+﻿#pragma once
+#include <tree_editor/common/graph/multi_instance_window.h>
+#include <tree_editor/common/graph/tree_instance.h>
+#include <tree_editor/common/choice_manager.h>
+#include <tree_editor/common/dialogs/line_dialog.h>
 #include <qfiledialog.h>
 
 using namespace std;
@@ -12,10 +12,7 @@ multi_instance_window::multi_instance_window(QWidget* parent)
 	: QMainWindow(parent)
 	, _logger(spiritsaway::tree_editor::logger_mgr::instance().create_logger("btree"))
 {
-	if (!load_config())
-	{
-		exit(1);
-	}
+
 }
 multi_instance_window::~multi_instance_window()
 {
@@ -28,18 +25,6 @@ bool multi_instance_window::load_config()
 	
 	auto config_file_path = std::filesystem::path("./config.json");
 	std::string notify_info;
-	if (!std::filesystem::exists(config_file_path))
-	{
-		auto cur_dialog = new config_dialog(this);
-		cur_dialog->run();
-		if (!cur_dialog->valid)
-		{
-			QMessageBox::about(this, QString("Error"),
-				QString::fromStdString("invalid config"));
-			return false;
-		}
-		
-	}
 	QMessageBox::about(this, QString("Error"),
 		QString::fromStdString("no content checker for config file"));
 	return false;
@@ -201,5 +186,15 @@ void multi_instance_window::action_goto_handler()
 }
 void multi_instance_window::action_open_handler()
 {
-	return;
+	auto error_info = action_open_impl();
+	if (error_info.size())
+	{
+		QMessageBox::about(this, QString("Error"),
+			QString::fromStdString(error_info));
+		return;
+	}
+}
+std::string multi_instance_window::action_open_impl()
+{
+	return "";
 }

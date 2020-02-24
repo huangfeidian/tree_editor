@@ -1,14 +1,14 @@
 ﻿
 #include <qfiledialog.h>
-#include <graph/tree_instance.h>
-#include <choice_manager.h>
-#include <dialogs/line_dialog.h>
+#include <tree_editor/common/graph/tree_instance.h>
+#include <tree_editor/common/choice_manager.h>
+#include <tree_editor/common/dialogs/line_dialog.h>
 #include <ui_editor_main_window.h>
 #include <filesystem>
-#include <dialogs/config_dialog.h>
-#include <graph/basic_node.h>
+#include <tree_editor/common/dialogs/path_config_dialog.h>
+#include <tree_editor/common/graph/basic_node.h>
 
-#include "editor_main_window.h"
+#include <tree_editor/editor/editor_main_window.h>
 
 using namespace spiritsaway::tree_editor;
 
@@ -93,6 +93,13 @@ std::string editor_main_window::new_file_name()
 void editor_main_window::action_new_handler()
 {
 	_logger->debug("main_window action_new_handler");
+	auto error_info = action_new_impl();
+	if (error_info.size())
+	{
+		QMessageBox::about(this, QString("Error"),
+			QString::fromStdString(error_info));
+		return;
+	}
 }
 
 
@@ -143,13 +150,26 @@ void editor_main_window::action_save_all_handler()
 void editor_main_window::action_export_handler()
 {
 	_logger->debug("main_window action_export_handler");
-	action_save_handler();
+	auto cur_ins = active_instance;
+	if (cur_ins)
+	{
+		cur_ins->export_handler();
+	}
 }
 
 void editor_main_window::action_export_all_handler()
 {
 	_logger->debug("main_window action_export_all_handler");
-	action_save_all_handler();
+	auto cur_window = cur_mdi->activeSubWindow();
+	for (const auto one_tree : _instances)
+	{
+		auto invalid_info = one_tree->export_handler();
+		if (!invalid_info.empty())
+		{
+			return;
+		}
+	}
+	
 }
 
 void editor_main_window::action_save_as_handler()
@@ -282,4 +302,9 @@ void editor_main_window::action_cut_handler()
 		return;
 	}
 	copy_cut_slice = cur_ins->cut_handler();
+}
+
+std::string editor_main_window::action_new_impl()
+{
+	return "";
 }

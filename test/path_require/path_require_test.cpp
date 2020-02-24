@@ -1,5 +1,5 @@
 ﻿#include <qapplication.h>
-#include <dialogs/path_config_dialog.h>
+#include <tree_editor/common/dialogs/path_config_dialog.h>
 #include <iostream>
 
 

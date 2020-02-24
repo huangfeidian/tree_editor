@@ -1,9 +1,9 @@
 ﻿#include <qboxlayout.h>
 #include <qmessagebox.h>
-#include <dialogs/info_dialog.h>
-#include <dialogs/editable_item.h>
+#include <tree_editor/common/dialogs/info_dialog.h>
+#include <tree_editor/common/dialogs/editable_item.h>
 
-#include <graph/basic_node.h>
+#include <tree_editor/common/graph/basic_node.h>
 
 using namespace spiritsaway::tree_editor;
 

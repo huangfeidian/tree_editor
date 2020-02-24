@@ -35,7 +35,8 @@
         "comment": "a number value",
         "editable_item": {
             "name": "value",
-            "type": "_float"
+            "type": "_float",
+            "value": 0
         }
 
     },
@@ -51,7 +52,11 @@
     },
     "root": {
         "child_min": 1,
-        "child_max": 1
+        "child_max": 1,
+        "comment": "root node of a math tree",
+        "editable_item": {
+            
+        }
     }
 
 }

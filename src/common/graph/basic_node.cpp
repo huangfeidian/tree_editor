@@ -1,14 +1,116 @@
-﻿#include <graph/basic_node.h>
-#include <dialogs/editable_item.h>
+﻿#include <tree_editor/common/graph/basic_node.h>
+#include <tree_editor/common/dialogs/editable_item.h>
 #include <any_container/decode.h>
 #include <sstream>
 #include <fstream>
 #include <iostream>
 
 using namespace spiritsaway::tree_editor;
+using namespace spiritsaway::serialize;
 
+json basic_node_desc::encode() const
+{
+	json::object_t result = json::object_t();
+	result["idx"] = idx;
+	result["children"] = children;
+	if (parent)
+	{
+		result["parent"] = parent.value();
+	}
+	result["color"] = color;
+	result["is_collapsed"] = is_collpased;
+	result["extra"] = extra;
+	return result;
+}
 
+bool basic_node_desc::decode(const json& data)
+{
+	auto temp_iter = data.find("idx");
+	if (temp_iter == data.end())
+	{
+		return false;
+	}
+	if (!serialize::decode(*temp_iter, idx))
+	{
+		return false;
+	}
 
+	temp_iter = data.find("type");
+	if (temp_iter == data.end())
+	{
+		return false;
+	}
+	if (!serialize::decode(*temp_iter, type))
+	{
+		return false;
+	}
+
+	temp_iter = data.find("children");
+	if (temp_iter == data.end())
+	{
+		return false;
+	}
+	if (!serialize::decode(*temp_iter, children))
+	{
+		return false;
+	}
+
+	temp_iter = data.find("comment");
+	if (temp_iter == data.end())
+	{
+		return false;
+	}
+	if (!serialize::decode(*temp_iter, comment))
+	{
+		return false;
+	}
+
+	temp_iter = data.find("color");
+	if (temp_iter == data.end())
+	{
+		return false;
+	}
+	if (!serialize::decode(*temp_iter, color))
+	{
+		return false;
+	}
+
+	temp_iter = data.find("is_collapsed");
+	if (temp_iter == data.end())
+	{
+		return false;
+	}
+	if (!serialize::decode(*temp_iter, is_collpased))
+	{
+		return false;
+	}
+
+	temp_iter = data.find("extra");
+	if (temp_iter == data.end())
+	{
+		return false;
+	}
+	if (!serialize::decode(*temp_iter, extra))
+	{
+		return false;
+	}
+	temp_iter = data.find("parent");
+	std::uint32_t temp_parent;
+	if (temp_iter != data.end())
+	{
+		if (!serialize::decode(*temp_iter, temp_parent))
+		{
+			return false;
+		}
+		parent = temp_parent;
+	}
+	return true;
+}
+
+bool basic_node::set_extra(const json::object_t& extra)
+{
+	return false;
+}
 std::string basic_node::check_valid() const
 {
 	auto max_size = max_child_num();
@@ -140,27 +242,21 @@ basic_node::basic_node(std::string _in_type, basic_node* _in_parent, std::uint32
 }
 json basic_node::to_json() const
 {
-	json result;
-	result["idx"] = _idx;
-	result["type"] = _type;
-	result["comment"] = comment;
-	std::vector<std::uint32_t> children_idx;
-	children_idx.reserve(_children.size());
+	basic_node_desc cur_desc;
+	cur_desc.idx = _idx;
+	cur_desc.comment = comment;
+	cur_desc.color = color;
+	cur_desc.type = _type;
 	for (const auto i : _children)
 	{
-		children_idx.push_back(i->_idx);
+		cur_desc.children.push_back(i->_idx);
 	}
-	result["children"] = children_idx;
 	if (_parent)
 	{
-		result["parent"] = _parent->_idx;
+		cur_desc.parent = _parent->_idx;
 	}
-	result["extra"] = json::object_t();
-	json::object_t editor;
-	editor["color"] = color;
-	editor["is_collapsed"] = _is_collapsed;
-	result["editor"] = editor;
-	return result;
+
+	return cur_desc.encode();
 }
 std::string basic_node::display_text() const
 {
@@ -200,4 +296,117 @@ bool basic_node::check_edit()
 basic_node::~basic_node()
 {
 
+}
+
+node_config_repo::node_config_repo()
+{
+
+}
+bool node_config_repo::add_config(const node_config& _config)
+{
+	auto cur_iter = configures.find(_config.node_type_name);
+	if (cur_iter == configures.end())
+	{
+		return false;
+	}
+	configures[_config.node_type_name] = _config;
+	return true;
+}
+void node_config_repo::load_config(const json& _config)
+{
+	if (!_config.is_object())
+	{
+		return;
+	}
+	for (const auto& one_item : _config.items())
+	{
+		std::string key = one_item.key();
+		const auto& value = one_item.value();
+		auto child_min_iter = value.find("child_min");
+		if (child_min_iter == value.end())
+		{
+			continue;
+		}
+		if (!child_min_iter->is_number_unsigned())
+		{
+			continue;
+		}
+		std::uint32_t cur_child_min = child_min_iter->get<std::uint32_t>();
+
+		auto child_max_iter = value.find("child_max");
+		if (child_max_iter == value.end())
+		{
+			continue;
+		}
+		if (!child_max_iter->is_number_unsigned())
+		{
+			continue;
+		}
+		std::uint32_t cur_child_max = child_max_iter->get<std::uint32_t>();
+
+		auto editable_iter = value.find("editable_item");
+		if (editable_iter == value.end())
+		{
+			continue;
+		}
+		if (!editable_iter->is_object())
+		{
+			continue;
+		}
+		json editable_info = *editable_iter;
+		node_config cur_config;
+		cur_config.node_type_name = key;
+		cur_config.max_child_num = cur_child_max;
+		cur_config.min_child_num = cur_child_min;
+		cur_config.editable_info = editable_item::from_json(editable_info);
+		add_config(cur_config);
+	}
+}
+std::optional<node_config> node_config_repo::get_config(const std::string& key) const
+{
+	auto cur_iter = configures.find(key);
+	if (cur_iter == configures.end())
+	{
+		return {};
+	}
+	else
+	{
+		return cur_iter->second;
+	}
+}
+
+config_node::config_node(const node_config& _in_config, config_node* _in_parent, std::uint32_t _in_idx)
+	:basic_node(_in_config.node_type_name, _in_parent, _in_idx)
+	, _config(_in_config)
+{
+	auto cur_child = _config.editable_info->clone();
+	_show_widget->_children.push_back(cur_child);
+}
+
+
+basic_node* config_node::create_node(std::string _type, basic_node* _parent, std::uint32_t _idx)
+{
+	auto cur_config = node_config_repo::instance().get_config(_type);
+	if (!cur_config)
+	{
+		return nullptr;
+	}
+	return new config_node(cur_config.value(), reinterpret_cast<config_node*>(_parent), _idx);
+}
+std::size_t config_node::max_child_num() const
+{
+	return _config.max_child_num;
+}
+std::size_t config_node::min_child_num() const
+{
+	return _config.min_child_num;
+}
+config_node::~config_node()
+{
+	return;
+}
+basic_node* config_node::clone_self(basic_node* _parent)const
+{
+	auto new_node = new config_node(_config, reinterpret_cast<config_node*>(_parent), 0);
+	return new_node;
 }

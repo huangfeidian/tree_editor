@@ -13,9 +13,9 @@ QT_END_NAMESPACE
 
 using json = nlohmann::json;
 
-namespace bt_editor = spiritsaway::tree_editor;
+namespace bt_editor = spiritsaway::behavior_tree::editor;
 
-namespace spiritsaway::tree_editor
+namespace spiritsaway::behavior_tree::editor
 {
 	class log_dialog;
 	enum class debug_source
