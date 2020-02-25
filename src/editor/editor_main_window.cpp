@@ -68,8 +68,8 @@ void editor_main_window::init_actions()
 	connect(ui->actionCut, SIGNAL(triggered()), this, SLOT(action_cut_handler()));
 	connect(ui->actionGoto, SIGNAL(triggered()), this, SLOT(action_goto_handler()));
 	connect(ui->actionFind, SIGNAL(triggered()), this, SLOT(action_find_handler()));
-	// agent menu
-	connect(ui->actionAgent, SIGNAL(triggered()), this, SLOT(action_agent_handler()));
+	connect(ui->actionReIndex, SIGNAL(triggered()), this, SLOT(action_reindex_handler()));
+
 
 }
 
@@ -102,7 +102,14 @@ void editor_main_window::action_new_handler()
 	}
 }
 
-
+void editor_main_window::action_reindex_handler()
+{
+	auto cur_ins = active_instance;
+	if (cur_ins)
+	{
+		cur_ins->reorder_index();
+	}
+}
 void editor_main_window::action_save_handler()
 {
 	_logger->debug("main_window action_save_handler");

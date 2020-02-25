@@ -76,5 +76,6 @@ namespace spiritsaway::tree_editor
 		void save_to_svg();
 		void save_to_png();
 		void search_node();
+		void reorder_index();
 	};
 }

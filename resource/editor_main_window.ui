@@ -61,6 +61,7 @@
     <addaction name="actionCopy"/>
     <addaction name="actionPaste"/>
     <addaction name="actionCut"/>
+    <addaction name="actionReIndex"/>
    </widget>
    <widget class="QMenu" name="menuConfig">
     <property name="title">
@@ -233,6 +234,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
+   </property>
+  </action>
+  <action name="actionReIndex">
+   <property name="text">
+    <string>ReIndex</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
    </property>
   </action>
  </widget>

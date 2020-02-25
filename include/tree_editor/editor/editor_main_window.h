@@ -56,6 +56,7 @@ public slots:
 	void action_copy_handler();
 	void action_paste_handler();
 	void action_cut_handler();
+	void action_reindex_handler();
 protected:
 	virtual std::string action_new_impl();
 };

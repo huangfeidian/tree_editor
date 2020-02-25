@@ -23,11 +23,11 @@ std::string math_node::display_text() const
 {
 	if (_type == "literal")
 	{
-		return _type + ":" + std::to_string(_idx) + std::to_string(_show_widget->find("value")->_value.get<double>());
+		return std::to_string(_idx) + ":" + _type + ":" + std::to_string(_show_widget->find("value")->_value.get<double>());
 	}
 	else if (_type == "reduce")
 	{
-		return _type + ":" + std::to_string(_idx) + _show_widget->find("reduce_operator")->_value.get<std::string>();
+		return std::to_string(_idx) + ":" + _type + ":" + _show_widget->find("reduce_operator")->_value.get<std::string>();
 	}
 	else
 	{
@@ -37,7 +37,9 @@ std::string math_node::display_text() const
 }
 basic_node* math_node::clone_self(basic_node* _parent) const
 {
-	return config_node::clone_self(_parent);
+	auto new_node = new math_node(_config, reinterpret_cast<math_node*>(_parent), 0);
+	new_node->_show_widget = std::dynamic_pointer_cast<struct_items>(_show_widget->clone());
+	return new_node;
 }
 math_node::math_node(const node_config& _config, math_node* _parent, std::uint32_t _idx)
 	: config_node(_config, _parent, _idx)
@@ -71,7 +73,7 @@ bool math_node::set_extra(const json::object_t& data)
 		{
 			return false;
 		}
-		return cur_widget->assign(*value_iter);
+		return cur_widget->assign(value_iter->second);
 	}
 	else if (_type == "reduce")
 	{
@@ -84,7 +86,7 @@ bool math_node::set_extra(const json::object_t& data)
 		{
 			return false;
 		}
-		return cur_widget->assign(*value_iter);
+		return cur_widget->assign(value_iter->second);
 	}
 	return true;
 }

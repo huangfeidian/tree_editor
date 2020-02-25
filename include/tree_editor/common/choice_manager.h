@@ -71,7 +71,7 @@ namespace spiritsaway::tree_editor
 						return;
 					}
 					choice_kinds.push_back(one_choice_desc.key());
-					choice_texts.push_back(one_choice_desc.value().get<std::string>());
+					choice_texts.push_back(one_choice_desc.key() + ": " + one_choice_desc.value().get<std::string>());
 				}
 				add_choice(cur_choice_name, choice_kinds, choice_texts);
 			}

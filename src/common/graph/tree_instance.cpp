@@ -329,6 +329,7 @@ void tree_instance::insert_handler()
 		return;
 	}
 	auto node_type_choices = choice_manager::instance().get_choice("node_type");
+
 	auto cur_dialog = new search_select_dialog(*node_type_choices.first, parent);
 	auto cur_choice = cur_dialog->run();
 	if (cur_choice.empty())
@@ -370,6 +371,11 @@ basic_node* tree_instance::copy_handler()
 	_logger->debug("tree_instance {} copy_handler ",
 		file_name.string());
 	if (!selected_node)
+	{
+		return nullptr;
+	}
+	// root node cant be copyed
+	if (!selected_node->_parent)
 	{
 		return nullptr;
 	}
@@ -494,6 +500,28 @@ basic_node* tree_instance::find_node_by_idx(std::uint32_t idx)
 	}
 	return nullptr;
 }
+void tree_instance::reorder_index()
+{
+	node_seq_idx = 0;
+	std::deque<basic_node*> all_nodes;
+	
+	all_nodes.push_back(_root);
+
+	while (!all_nodes.empty())
+	{
+		auto cur_node = all_nodes.front();
+		all_nodes.pop_front();
+		cur_node->_idx = next_node_seq();
+		
+		for (auto one_child : cur_node->_children)
+		{
+			all_nodes.push_back(one_child);
+		}
+	}
+	set_dirty();
+	refresh();
+
+}
 std::string tree_instance::save_handler()
 {
 	if (parent->is_read_only())
@@ -506,30 +534,25 @@ std::string tree_instance::save_handler()
 	{
 		return "";
 	}
-	node_seq_idx = 0;
-	std::deque<basic_node*> all_nodes;
-	std::vector<basic_node*> indexed_nodes;
-	indexed_nodes.reserve(20);
-	all_nodes.push_back(_root);
-	
-	while (!all_nodes.empty())
-	{
-		auto cur_node = all_nodes.front();
-		all_nodes.pop_front();
-		cur_node->_idx = next_node_seq();
-		indexed_nodes.push_back(cur_node);
-		for (auto one_child : cur_node->_children)
-		{
-			all_nodes.push_back(one_child);
-		}
-	}
+
 	auto invalid_info = _root->check_valid();
 	if (invalid_info.empty())
 	{
 		json::array_t nodes_info;
-		for (const auto one_node : indexed_nodes)
+		std::deque<basic_node*> all_nodes;
+
+		all_nodes.push_back(_root);
+
+		while (!all_nodes.empty())
 		{
-			nodes_info.push_back(one_node->to_json());
+			auto cur_node = all_nodes.front();
+			all_nodes.pop_front();
+			nodes_info.push_back(cur_node->to_json());
+
+			for (auto one_child : cur_node->_children)
+			{
+				all_nodes.push_back(one_child);
+			}
 		}
 		json::object_t dump_json;
 		dump_json["nodes"] = nodes_info;

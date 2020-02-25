@@ -111,7 +111,26 @@ bool math_editor_window::load_config()
 		choice_desc_path = temp_result[1];
 		save_path = temp_result[2];
 	}
-
+	// choice first 
+	std::ifstream choice_config_file(choice_desc_path);
+	std::string choice_file_content((std::istreambuf_iterator<char>(choice_config_file)), std::istreambuf_iterator<char>());
+	if (!json::accept(choice_file_content))
+	{
+		notify_info = "choice config file should be json";
+		QMessageBox::about(this, QString("Error"),
+			QString::fromStdString(notify_info));
+		return false;
+	}
+	auto choice_json_content = json::parse(choice_file_content);
+	if (!choice_json_content.is_object())
+	{
+		notify_info = "choice config content should be json dict";
+		QMessageBox::about(this, QString("Error"),
+			QString::fromStdString(notify_info));
+		return false;
+	}
+	choice_manager::instance().load_from_json(choice_json_content);
+	//nodes depends on choice
 	std::ifstream node_config_file(node_desc_path);
 	std::string node_file_content((std::istreambuf_iterator<char>(node_config_file)), std::istreambuf_iterator<char>());
 	if (!json::accept(node_file_content))
@@ -131,24 +150,7 @@ bool math_editor_window::load_config()
 	}
 	node_config_repo::instance().load_config(node_json_content);
 
-	std::ifstream choice_config_file(choice_desc_path);
-	std::string choice_file_content((std::istreambuf_iterator<char>(choice_config_file)), std::istreambuf_iterator<char>());
-	if (!json::accept(choice_file_content))
-	{
-		notify_info = "choice config file should be json";
-		QMessageBox::about(this, QString("Error"),
-			QString::fromStdString(notify_info));
-		return false;
-	}
-	auto choice_json_content = json::parse(choice_file_content);
-	if (!choice_json_content.is_object())
-	{
-		notify_info = "choice config content should be json dict";
-		QMessageBox::about(this, QString("Error"),
-			QString::fromStdString(notify_info));
-		return false;
-	}
-	choice_manager::instance().load_from_json(choice_json_content);
+	
 	data_folder = save_path;
 	return true;
 }
@@ -231,7 +233,7 @@ std::string math_editor_window::action_open_impl()
 	idx_queue.push_back(cur_root_desc.idx);
 
 	std::unordered_map<std::uint32_t, math_node*> temp_nodes;
-	math_node* cur_root;
+	math_node* cur_root = nullptr;
 	while (!idx_queue.empty())
 	{
 		auto cur_idx = idx_queue.front();
@@ -242,6 +244,7 @@ std::string math_editor_window::action_open_impl()
 			
 		}
 		auto cur_desc = node_relation[cur_idx];
+		math_node* cur_parent_p = nullptr;
 		if (cur_desc.parent)
 		{
 			auto parent_idx = cur_desc.parent.value();
@@ -251,28 +254,33 @@ std::string math_editor_window::action_open_impl()
 				return "tree content has no cyclic relation";
 				
 			}
-			auto cur_parent = cur_parent_iter->second;
-			auto cur_config = node_config_repo::instance().get_config(cur_desc.type);
-			if (!cur_config)
-			{
-				return "invalid node type " + cur_desc.type;
-			}
-			auto cur_node = new math_node(cur_config.value(), cur_parent, cur_desc.idx);
-			cur_node->color = cur_desc.color;
-			cur_node->_is_collapsed = cur_desc.is_collpased;
-			cur_node->comment = cur_desc.comment;
-			temp_nodes[cur_desc.idx] = cur_node;
-			for (auto one_child : cur_desc.children)
-			{
-				idx_queue.push_back(one_child);
-			}
-			if (!cur_root)
-			{
-				cur_root = cur_node;
-			}
-			cur_node->refresh_editable_items();
-			cur_node->set_extra(json(cur_desc.extra));
+			cur_parent_p = cur_parent_iter->second;
+			
 		}
+		auto cur_config = node_config_repo::instance().get_config(cur_desc.type);
+		if (!cur_config)
+		{
+			return "invalid node type " + cur_desc.type;
+		}
+		auto cur_node = new math_node(cur_config.value(), cur_parent_p, cur_desc.idx);
+		if (cur_parent_p)
+		{
+			cur_parent_p->add_child(cur_node);
+		}
+		cur_node->color = cur_desc.color;
+		cur_node->_is_collapsed = cur_desc.is_collpased;
+		cur_node->comment = cur_desc.comment;
+		temp_nodes[cur_desc.idx] = cur_node;
+		for (auto one_child : cur_desc.children)
+		{
+			idx_queue.push_back(one_child);
+		}
+		if (!cur_root)
+		{
+			cur_root = cur_node;
+		}
+		cur_node->refresh_editable_items();
+		cur_node->set_extra(json(cur_desc.extra));
 	}
 
 	cur_root->refresh_editable_items();

@@ -2,14 +2,14 @@
     "add": {
         "child_min": 2,
         "child_max": 2,
-        "editable_items": {
+        "editable_item": {
 
         }
     },
     "dec": {
         "child_min": 2,
         "child_max": 2,
-        "editable_items": {
+        "editable_item": {
 
         }
     },
@@ -20,7 +20,7 @@
     "div": {
         "child_min": 2,
         "child_max": 2,
-        "editable_items": {
+        "editable_item": {
 
         }
     },
@@ -47,7 +47,8 @@
         "editable_item": {
             "name": "reduce_operator",
             "type": "_choice",
-            "choice_type": "reduce_op"
+            "choice_type": "reduce_op",
+            "value": "sum"
         }
     },
     "root": {

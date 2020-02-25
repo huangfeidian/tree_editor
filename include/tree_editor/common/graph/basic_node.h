@@ -18,7 +18,7 @@ namespace spiritsaway::tree_editor
 		std::string comment;
 		std::uint32_t color;
 		std::optional<std::uint32_t> parent;
-		bool is_collpased;
+		bool is_collpased = false;
 		std::unordered_map<std::string, json> extra;
 		virtual json encode() const;
 		virtual bool decode(const json& data);
@@ -67,6 +67,7 @@ namespace spiritsaway::tree_editor
 		std::string node_type_name;
 		std::size_t max_child_num;
 		std::size_t min_child_num;
+		std::string comment;
 		std::shared_ptr<editable_item> editable_info;
 		static std::unordered_map<std::string, node_config> configured_nodes;
 	};
@@ -89,8 +90,8 @@ namespace spiritsaway::tree_editor
 
 	class config_node : public basic_node
 	{
-	private:
-		const node_config& _config;
+	protected:
+		const node_config _config;
 	public:
 		config_node(const node_config& _config, config_node* _parent, std::uint32_t _idx);
 		std::size_t max_child_num() const;

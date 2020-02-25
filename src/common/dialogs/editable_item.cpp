@@ -564,7 +564,7 @@ std::shared_ptr<float_item> float_item::from_json(const json& data)
 	{
 		return {};
 	}
-	if (!value_iter->is_number_float())
+	if (!(value_iter->is_number()))
 	{
 		return {};
 	}
