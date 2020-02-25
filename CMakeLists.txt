@@ -55,7 +55,7 @@ add_executable(tree_editor ${UI_FILES}  ${SHARE_SRC_FILES} ${SHARE_HEADER_FILES}
 target_link_libraries(tree_editor PRIVATE Qt5::Widgets)
 target_link_libraries(tree_editor PUBLIC nlohmann_json::nlohmann_json any_container)
 
-add_executable(tree_debugger ${UI_FILES}  ${SHARE_SRC_FILES} ${SHARE_HEADER_FILES} ${DEBUGER_SRC_FILES} ${DEBUGER_SRC_FILES})
+add_executable(tree_debugger ${UI_FILES}  ${SHARE_SRC_FILES} ${SHARE_HEADER_FILES} ${DEBUGER_SRC_FILES} ${DEBUGER_HEADER_FILES})
 find_package(http_server CONFIG REQUIRED)
 INCLUDE_DIRECTORIES(${http_server_include_dirs})
 target_link_libraries(tree_debugger PRIVATE Qt5::Widgets)

@@ -6,7 +6,7 @@
 #include <vector>
 #include <utility>
 
-namespace spiritsaway::behavior_tree::editor
+namespace spiritsaway::tree_editor
 {
     class log_item;
 

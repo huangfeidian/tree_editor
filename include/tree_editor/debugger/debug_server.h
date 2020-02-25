@@ -1,26 +1,26 @@
-#pragma once
+﻿#pragma once
 #include <deque>
 
 #include <http_server/http_server.h>
 #include <http_server/http_connection.h>
-#include <behavior/btree_trace.h>
 #include <any_container/decode.h>
+#include <tree_editor/debugger/debug_cmd.h>
 
-namespace spiritsaway::behavior_tree::editor
+namespace spiritsaway::tree_editor
 {
 	using namespace spiritsaway::http;
 	class debug_connection : public spiritsaway::http::http_connection
 	{
 		
 	private:
-		std::deque<behavior_tree::common::agent_cmd_detail>& _cmd_queue;
+		std::deque<node_trace_cmd>& _cmd_queue;
 	public:
-		static std::shared_ptr<debug_connection> create(asio::ip::tcp::socket&& _in_client_socket, std::shared_ptr<spdlog::logger> logger, std::uint32_t in_connection_idx, std::deque<behavior_tree::common::agent_cmd_detail>& _in_cmd_queue)
+		static std::shared_ptr<debug_connection> create(asio::ip::tcp::socket&& _in_client_socket, std::shared_ptr<spdlog::logger> logger, std::uint32_t in_connection_idx, std::deque<node_trace_cmd>& _in_cmd_queue)
 
 		{
 			return std::make_shared<debug_connection>(std::move(_in_client_socket), logger, in_connection_idx);
 		}
-		debug_connection(asio::ip::tcp::socket&& in_client_socket, std::shared_ptr<spdlog::logger> logger, std::uint32_t in_connection_idx, std::deque<behavior_tree::common::agent_cmd_detail>& _in_cmd_queue)
+		debug_connection(asio::ip::tcp::socket&& in_client_socket, std::shared_ptr<spdlog::logger> logger, std::uint32_t in_connection_idx, std::deque<node_trace_cmd>& _in_cmd_queue)
 			: http_connection(std::move(in_client_socket), logger, in_connection_idx, 1, "debug_connection")
 			, _cmd_queue(_in_cmd_queue)
 		{
@@ -31,8 +31,8 @@ namespace spiritsaway::behavior_tree::editor
 		{
 			std::string error_desc = "";
 			std::string entity_id = "";
-			using temp_cmd_type = std::tuple<std::uint64_t, std::uint32_t, spiritsaway::serialize::any_vector>;
-			std::vector<temp_cmd_type> cmds;
+
+			std::vector<node_trace_cmd> cmds;
 			while (true)
 			{
 				if (_header.method() != "POST" || _header.path_and_query() != "/post/ai_debug/")
@@ -77,10 +77,7 @@ namespace spiritsaway::behavior_tree::editor
 
 				for (auto one_cmd : cmds)
 				{
-					auto[ts, cmd_int, params] = one_cmd;
-					behavior_tree::common::agent_cmd_detail cur_detail;
-					cur_detail = make_tuple(ts, static_cast<behavior_tree::common::agent_cmd>(cmd_int), params);
-					_cmd_queue.push_back(cur_detail);
+					_cmd_queue.push_back(one_cmd);
 				}
 				break;
 			}

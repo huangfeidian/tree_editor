@@ -1,18 +1,20 @@
-#include <qfile.h>
+﻿#include <qfile.h>
 #include <chrono>
 #include <ctime>
 #include <qmenu.h>
 
 #include <any_container/encode.h>
 
-#include <dialogs/search_select_dialog.h>
+#include <tree_editor/common/dialogs/search_select_dialog.h>
 #include <sstream>
-#include <dialogs/editable_item.h>
+#include <tree_editor/common/dialogs/editable_item.h>
 
-#include "log_dialog.h"
-#include "../debugger_main_window.h"
+#include <tree_editor/debugger/log_dialog.h>
+#include <tree_editor/debugger/debugger_main_window.h>
+#include <magic_enum.hpp>
 
-using namespace spiritsaway::behavior_tree::editor;
+
+using namespace spiritsaway::tree_editor;
 namespace
 {
 	std::string format_timepoint(std::uint64_t milliseconds_since_epoch)
@@ -30,7 +32,7 @@ namespace
 		return std::string(buffer) + std::to_string(milliseconds_since_epoch % 1000) + "ms";
 	}
 }
-log_dialog::log_dialog(std::deque<behavior_tree::common::agent_cmd_detail > & in_cmd_queue, debugger_main_window* parent)
+log_dialog::log_dialog(std::deque<node_trace_cmd > & in_cmd_queue, debugger_main_window* parent)
 	:QWidget(parent)
 	, cmd_queue(in_cmd_queue)
 	, _main_window(parent)
@@ -63,7 +65,7 @@ log_dialog::log_dialog(std::deque<behavior_tree::common::agent_cmd_detail > & in
 	connect(_poll_timer, &QTimer::timeout, this, &log_dialog::timer_poll);
 
 }
-bool log_dialog::push_cmd(behavior_tree::common::agent_cmd_detail one_cmd)
+bool log_dialog::push_cmd(node_trace_cmd one_cmd)
 {
 	std::vector<std::string> cmd_str;
 	auto[ts, cmd, param] = one_cmd;
@@ -268,7 +270,7 @@ void log_dialog::on_view_context_menu(const QPoint& pos)
 	menu->exec(_view->viewport()->mapToGlobal(pos));
 	
 }
-void log_dialog::show_fronts(const behavior_tree::common::btree_state& cur_state)
+void log_dialog::show_fronts(const std::shared_ptr<tree_state>& cur_state)
 {
 	std::vector<std::string> cur_fronts_str;
 	std::vector<std::pair<std::uint32_t, std::uint32_t>> temp_fronts;
@@ -294,7 +296,7 @@ void log_dialog::show_fronts(const behavior_tree::common::btree_state& cur_state
 	}
 
 }
-void log_dialog::show_blackboard(const behavior_tree::common::btree_state& cur_state)
+void log_dialog::show_blackboard(const std::shared_ptr<tree_state>& cur_state)
 {
 
 	std::vector<std::string> cur_blackboard_str;
@@ -331,13 +333,13 @@ void log_dialog::increate_row_idx()
 		_cur_secondary_row = 0;
 	}
 }
-std::optional<behavior_tree::common::agent_cmd_detail> log_dialog::run_once_impl()
+std::optional<node_trace_cmd> log_dialog::run_once_impl()
 {
 	if (_cur_top_row >= _btree_history._poll_states.size())
 	{
 		return {};
 	}
-	behavior_tree::common::agent_cmd_detail cur_cmd;
+	node_trace_cmd cur_cmd;
 	if (_cur_secondary_row < _btree_history._poll_states[_cur_top_row]._cmds.size())
 	{
 		cur_cmd = _btree_history._poll_states[_cur_top_row]._cmds[_cur_secondary_row];
@@ -437,7 +439,7 @@ void log_dialog::debug_run_through(std::size_t max_step)
 	auto cur_model_idx = get_model_idx(_cur_top_row, _cur_secondary_row, 0);
 	_view->setCurrentIndex(cur_model_idx);
 }
-void log_dialog::highlight_fronts(const behavior_tree::common::btree_state& cur_state)
+void log_dialog::highlight_fronts(const std::shared_ptr<tree_state>& cur_state)
 {
 	//for (auto one_pre_front : _pre_fronts)
 	//{

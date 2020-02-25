@@ -1,11 +1,11 @@
+﻿
 
-
-#include "log_tree_model.h"
-#include "log_item.h"
+#include <tree_editor/debugger/log_tree_model.h>
+#include <tree_editor/debugger/log_item.h>
 
 #include <QtWidgets>
 
-using namespace  spiritsaway::behavior_tree::editor;
+using namespace  spiritsaway::tree_editor;
 //! [0]
 log_tree_model::log_tree_model(const std::vector<std::pair<QString, Qt::ItemFlags>>& headers, QObject *parent)
     : QAbstractItemModel(parent)

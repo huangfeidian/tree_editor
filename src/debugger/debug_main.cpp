@@ -1,4 +1,4 @@
-#include <QtCore/QVariant>
+﻿#include <QtCore/QVariant>
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QHeaderView>
@@ -19,13 +19,11 @@
 #include <any_container/decode.h>
 #include <any_container/any_value.h>
 
-#include <behavior/btree.h>
 
-#include "debugger_main_window.h"
+#include <tree_editor/debugger/debugger_main_window.h>
 
 using namespace std;
-using namespace spiritsaway::behavior_tree::editor;
-using namespace spiritsaway;
+using namespace spiritsaway::tree_editor;
 
 int main(int argc, char *argv[])
 {
@@ -46,13 +44,7 @@ int main(int argc, char *argv[])
 	using temp_cmd_type = std::tuple<std::uint64_t, std::uint32_t, spiritsaway::serialize::any_vector>;
 	std::vector<temp_cmd_type> cmds;
 	decode(config_json, cmds);
-	for (auto one_cmd : cmds)
-	{
-		auto[ts, cmd_int, params] = one_cmd;
-		behavior_tree::common::agent_cmd_detail cur_detail;
-		cur_detail = make_tuple(ts, static_cast<behavior_tree::common::agent_cmd>(cmd_int), params);
-		w._btree_cmds.push_back(cur_detail);
-	}
+
 	
 	w.showMaximized();
 

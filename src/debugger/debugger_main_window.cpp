@@ -1,21 +1,18 @@
-#include <qfiledialog.h>
+﻿#include <qfiledialog.h>
 #include <qdockwidget.h>
-#include <btree/nodes.h>
-#include <graph/tree_instance.h>
-#include <choice_manager.h>
-#include <btree/btree_config.h>
-#include <dialogs/line_dialog.h>
+#include <tree_editor/common/graph/multi_instance_window.h>
+#include <tree_editor/common/choice_manager.h>
+#include <tree_editor/common/dialogs/line_dialog.h>
 #include <ui_debugger_main_window.h>
 #include <filesystem>
 
-#include <dialogs/config_dialog.h>
+#include <tree_editor/common/dialogs/path_config_dialog.h>
 
 
-#include "debugger_main_window.h"
-#include "log_viewer/log_dialog.h"
+#include <tree_editor/debugger/debugger_main_window.h>
+#include <tree_editor/debugger/log_dialog.h>
 
-using namespace spiritsaway::behavior_tree::editor;
-using namespace spiritsaway::behavior_tree::common;
+using namespace spiritsaway::tree_editor;
 
 debugger_main_window::debugger_main_window(QWidget* parent)
 	: multi_instance_window(parent)
@@ -83,7 +80,7 @@ void debugger_main_window::init_actions()
 }
 bool debugger_main_window::focus_on(const std::string& tree_name, std::uint32_t node_idx)
 {
-	const auto& cur_btree_config = spiritsaway::behavior_tree::editor::btree_config::instance();
+	const auto& cur_btree_config = spiritsaway::tree_editor::btree_config::instance();
 	std::filesystem::path cur_file_path = cur_btree_config.btree_folder / tree_name;
 	std::string cur_file_path_str = cur_file_path.string();
 	auto opt_ins_idx = already_open(cur_file_path_str);
@@ -107,7 +104,7 @@ bool debugger_main_window::focus_on(const std::string& tree_name, std::uint32_t 
 }
 bool debugger_main_window::node_has_breakpoint(const std::string& tree_name, std::uint32_t node_idx) const
 {
-	const auto& cur_btree_config = spiritsaway::behavior_tree::editor::btree_config::instance();
+	const auto& cur_btree_config = spiritsaway::tree_editor::btree_config::instance();
 	std::filesystem::path cur_file_path = cur_btree_config.btree_folder / tree_name;
 	std::string cur_file_path_str = cur_file_path.string();
 	auto opt_ins_idx = already_open(cur_file_path_str);
@@ -132,7 +129,7 @@ bool debugger_main_window::node_has_breakpoint(const std::string& tree_name, std
 }
 void debugger_main_window::highlight_node(const std::string& tree_name, std::uint32_t node_idx, QColor color)
 {
-	const auto& cur_btree_config = spiritsaway::behavior_tree::editor::btree_config::instance();
+	const auto& cur_btree_config = spiritsaway::tree_editor::btree_config::instance();
 	std::filesystem::path cur_file_path = cur_btree_config.btree_folder / tree_name;
 	std::string cur_file_path_str = cur_file_path.string();
 	auto opt_ins_idx = already_open(cur_file_path_str);
