@@ -36,7 +36,7 @@ void debugger_main_window::init_widgets()
 	connect(cur_mdi, SIGNAL(subWindowActivated(QMdiSubWindow *)), this, SLOT(sub_window_activated(QMdiSubWindow*)));
 
 	QDockWidget *cur_docker_widget = new QDockWidget(tr("log_viewer"), this);
-	_log_viewer = new log_dialog(_btree_cmds, this);
+	_log_viewer = new log_dialog(_tree_cmds, this);
 
 	//auto temp_layout = new QVBoxLayout();
 	//temp_layout->setAlignment(Qt::AlignTop);
@@ -90,17 +90,21 @@ tree_instance* debugger_main_window::ensure_file_open(const std::string& tree_na
 	{
 		cur_ins = _instances[opt_ins_idx.value()];
 		cur_mdi->setActiveSubWindow(cur_ins->window);
+		return cur_ins;
 	}
 	else
 	{
-		node* cur_root = node::load(cur_file_path_str, _logger);
-		if (!cur_root)
+		
+		auto open_result = action_open_impl(cur_file_path_str);
+		if (std::holds_alternative<tree_instance*>(open_result))
 		{
-			return false;
+			return std::get<tree_instance*>(open_result);
 		}
-		cur_ins = new tree_instance(cur_file_path_str, cur_root, this);
+		else
+		{
+			return nullptr;
+		}
 	}
-	return cur_ins;
 }
 bool debugger_main_window::focus_on(const std::string& tree_name, std::uint32_t node_idx)
 {
@@ -110,46 +114,45 @@ bool debugger_main_window::focus_on(const std::string& tree_name, std::uint32_t 
 	{
 		return false;
 	}
+
 	cur_ins->focus_on(node_idx);
 	return true;
 }
-bool debugger_main_window::node_has_breakpoint(const std::string& tree_name, std::uint32_t node_idx) const
+bool debugger_main_window::node_has_breakpoint(const std::string& tree_name, std::uint32_t node_idx)
 {
-	const auto& cur_btree_config = spiritsaway::tree_editor::btree_config::instance();
-	std::filesystem::path cur_file_path = cur_btree_config.btree_folder / tree_name;
+	auto cur_file_path = data_folder / tree_name;
 	std::string cur_file_path_str = cur_file_path.string();
-	auto opt_ins_idx = already_open(cur_file_path_str);
-	tree_instance* cur_ins;
-	if (opt_ins_idx)
+	tree_instance* cur_ins = ensure_file_open(cur_file_path_str);
+	if (!cur_ins)
 	{
-		cur_ins = _instances[opt_ins_idx.value()];
-		auto cur_node = cur_ins->find_node_by_idx(node_idx);
-		if (!cur_node)
-		{
-			return false;
-		}
-		else
-		{
-			return cur_node->_has_break_point;
-		}
+		return true;
+	}
+	auto cur_node = cur_ins->find_node_by_idx(node_idx);
+	if (!cur_node)
+	{
+		return true;
 	}
 	else
 	{
-		return false;
+		return cur_node->_has_break_point;
 	}
+	
 }
 void debugger_main_window::highlight_node(const std::string& tree_name, std::uint32_t node_idx, QColor color)
 {
-	const auto& cur_btree_config = spiritsaway::tree_editor::btree_config::instance();
-	std::filesystem::path cur_file_path = cur_btree_config.btree_folder / tree_name;
+	std::filesystem::path cur_file_path = data_folder / tree_name;
 	std::string cur_file_path_str = cur_file_path.string();
 	auto opt_ins_idx = already_open(cur_file_path_str);
-	tree_instance* cur_ins;
-	if (opt_ins_idx)
+	tree_instance* cur_ins = ensure_file_open(cur_file_path_str);
+	if (!cur_ins)
 	{
-		cur_ins = _instances[opt_ins_idx.value()];
+		return;
+	}
+	else
+	{
 		cur_ins->set_temp_color(node_idx, color);
 	}
+
 }
 
 void debugger_main_window::set_debug_mode(debug_mode _new_mode)
@@ -191,21 +194,9 @@ void debugger_main_window::action_http_handler()
 			QString::fromStdString(notify_info));
 		return;
 	}
-	auto cur_port_dialog = new line_dialog("http server port", "8090", this);
-	auto port_text = cur_port_dialog->run();
-	std::uint32_t result = 0;
-	for (const auto i : port_text)
-	{
-		if (i < '0' || i > '9')
-		{
-			auto notify_info = fmt::format("cant get idx from input, shoule be an interger");
-			QMessageBox::about(this, QString("Error"),
-				QString::fromStdString(notify_info));
-			return;
-		}
-		auto cur_digit = i - '0';
-		result = result * 10 + cur_digit;
-	}
+	auto cur_port_dialog = new uint_dialog("http server port", 8090, this);
+	auto result = cur_port_dialog->run();
+	
 	if (result <= 1024 or result >= 20000)
 	{
 		auto notify_info = "port number shoude between 1024 and 20000";
@@ -213,5 +204,7 @@ void debugger_main_window::action_http_handler()
 			QString::fromStdString(notify_info));
 		return;
 	}
-	_debug_source = debug_source::http_debug;
+	_http_server = std::make_shared<http_server<debug_connection, std::deque<node_trace_cmd>>>(_asio_context, "tree_debugger", result, 1, &_tree_cmds);
+	_http_server->run();
+	return;
 }

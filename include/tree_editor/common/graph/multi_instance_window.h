@@ -64,7 +64,7 @@ namespace spiritsaway::tree_editor
 		void action_goto_handler();
 		void action_open_handler();
 	protected:
-		virtual std::string action_open_impl();
+		virtual std::variant<std::string, tree_instance*> action_open_impl(const std::string& file_name);
 
 	};
 }

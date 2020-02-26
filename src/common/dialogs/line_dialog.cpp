@@ -34,3 +34,23 @@ void line_dialog::temp_confirm()
 	auto temp_text = _line_edit->text();
 	_text = temp_text.toStdString();
 }
+uint_dialog::uint_dialog(std::string title, std::uint32_t init_value, QWidget* parent)
+	:line_dialog(title, std::to_string(init_value), parent)
+{
+
+}
+std::uint32_t uint_dialog::run()
+{
+	auto text = line_dialog::run();
+	std::uint32_t result = 0;
+	for (const auto i : text)
+	{
+		if (i < '0' || i > '9')
+		{
+			return 0;
+		}
+		auto cur_digit = i - '0';
+		result = result * 10 + cur_digit;
+	}
+	return result;
+}

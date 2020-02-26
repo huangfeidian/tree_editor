@@ -39,10 +39,12 @@ namespace spiritsaway::tree_editor
 		Ui::debugger_main_window *ui;
 		log_dialog* _log_viewer;
 		debug_source _debug_source = debug_source::no_debug;
+		std::shared_ptr<http_server<debug_connection, std::deque<node_trace_cmd>>> _http_server;
+		asio::io_context _asio_context;
 	public:
-		std::deque<node_trace_cmd> _btree_cmds;
+		std::deque<node_trace_cmd> _tree_cmds;
 		bool focus_on(const std::string& tree_name, std::uint32_t node_idx);
-		bool node_has_breakpoint(const std::string& tree_name, std::uint32_t node_idx) const;
+		bool node_has_breakpoint(const std::string& tree_name, std::uint32_t node_idx);
 		void highlight_node(const std::string& tree_name, std::uint32_t node_idx, QColor color);
 		tree_instance* ensure_file_open(const std::string& tree_name);
 	private:

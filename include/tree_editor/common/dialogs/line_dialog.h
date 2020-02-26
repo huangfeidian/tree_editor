@@ -34,4 +34,15 @@ namespace spiritsaway::tree_editor
 		QPushButton* _button;
 		QLineEdit* _line_edit;
 	};
+	class uint_dialog : public line_dialog
+	{
+
+		Q_OBJECT
+
+	public:
+		uint_dialog(std::string title, std::uint32_t init_value, QWidget* parent = 0);
+
+		std::uint32_t run();
+	};
+
 }

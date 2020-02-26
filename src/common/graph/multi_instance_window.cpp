@@ -188,31 +188,44 @@ void multi_instance_window::action_goto_handler()
 	{
 		return;
 	}
-	auto cur_goto_dialog = new line_dialog("goto node", "", this);
-	auto goto_text = cur_goto_dialog->run();
-	std::uint32_t result = 0;
-	for (const auto i : goto_text)
+	auto cur_goto_dialog = new uint_dialog("goto node", 0, this);
+	std::uint32_t result = cur_goto_dialog->run();
+	if (!result)
 	{
-		if (i < '0' || i > '9')
-		{
-			auto notify_info = fmt::format("cant get idx from input, shoule be an interger");
-			QMessageBox::about(this, QString("Error"),
-				QString::fromStdString(notify_info));
-			return;
-		}
-		auto cur_digit = i - '0';
-		result = result * 10 + cur_digit;
-	}
+		return;
+	 }
 	cur_ins->focus_on(result);
 }
 void multi_instance_window::action_open_handler()
 {
-	auto error_info = action_open_impl();
-	if (error_info.size())
+	auto fileName = QFileDialog::getOpenFileName(this,
+		tr("Open Math Tree"), QString::fromStdString(data_folder.string()), tr("Json File (*.json)"));
+	if (!fileName.size())
 	{
+		std::string error_info = "empty file name";
 		QMessageBox::about(this, QString("Error"),
 			QString::fromStdString(error_info));
 		return;
+	}
+	if (already_open(fileName.toStdString()))
+	{
+		std::string error_info = "file already open";
+		QMessageBox::about(this, QString("Error"),
+			QString::fromStdString(error_info));
+		return;
+	}
+	auto open_result = action_open_impl(fileName.toStdString());
+	if (std::holds_alternative<std::string>(open_result))
+	{
+		std::string error_info = std::get<std::string>(open_result);
+		QMessageBox::about(this, QString("Error"),
+			QString::fromStdString(error_info));
+		return;
+	}
+	else
+	{
+		auto cur_ins = std::get<tree_instance*>(open_result);
+		add_instance(cur_ins);
 	}
 }
 basic_node* multi_instance_window::create_node_from_desc(const basic_node_desc& cur_desc, basic_node* parent)
@@ -234,19 +247,10 @@ basic_node* multi_instance_window::create_node_from_desc(const basic_node_desc& 
 	cur_node->set_extra(json(cur_desc.extra));
 	return cur_node;
 }
-std::string multi_instance_window::action_open_impl()
+std::variant<std::string, tree_instance*> multi_instance_window::action_open_impl(const std::string& file_name)
 {
-	auto fileName = QFileDialog::getOpenFileName(this,
-		tr("Open Math Tree"), QString::fromStdString(data_folder.string()), tr("Json File (*.json)"));
-	if (!fileName.size())
-	{
-		return "invalid file name";
-	}
-	if (already_open(fileName.toStdString()))
-	{
-		return "file already open";
-	}
-	std::ifstream tree_file(fileName.toStdString());
+	
+	std::ifstream tree_file(file_name);
 	std::string tree_file_content((std::istreambuf_iterator<char>(tree_file)), std::istreambuf_iterator<char>());
 	if (!json::accept(tree_file_content))
 	{
@@ -338,6 +342,6 @@ std::string multi_instance_window::action_open_impl()
 		}
 	}
 
-	tree_instance* cur_tree_instance = new tree_instance(fileName.toStdString(), cur_root, this);
-	return "";
+	tree_instance* cur_tree_instance = new tree_instance(file_name, cur_root, this);
+	return cur_tree_instance;
 }
