@@ -44,6 +44,7 @@ namespace spiritsaway::tree_editor
 		bool focus_on(const std::string& tree_name, std::uint32_t node_idx);
 		bool node_has_breakpoint(const std::string& tree_name, std::uint32_t node_idx) const;
 		void highlight_node(const std::string& tree_name, std::uint32_t node_idx, QColor color);
+		tree_instance* ensure_file_open(const std::string& tree_name);
 	private:
 		void set_debug_mode(debug_mode _new_mode);
 	public:

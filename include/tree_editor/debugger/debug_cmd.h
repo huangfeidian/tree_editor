@@ -53,6 +53,7 @@ namespace spiritsaway::tree_editor
 		bool replay(const var_trace_cmd& _cmd_info);
 		json encode() const;
 		bool decode(const json& data);
+		const std::unordered_map<std::string, json>& data() const;
 	};
 	
 	enum class nodes_cmd
@@ -86,10 +87,12 @@ namespace spiritsaway::tree_editor
 
 		virtual bool run_one_cmd(const node_trace_cmd& _cmd);
 		virtual void run_cmd_to(std::uint32_t cmd_idx);
+		const std::unordered_map<std::string, json>& vars() const;
 
 	};
 	class tree_state_traces
 	{
+	public:
 		std::vector<std::shared_ptr<tree_state>> _old_states;
 		std::shared_ptr<tree_state> _latest_state;
 		virtual bool push_cmd(const node_trace_cmd& _cmd);

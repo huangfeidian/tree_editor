@@ -22,9 +22,7 @@
             ],
             "color": 0,
             "comment": "",
-            "extra": {
-                "value": "sum"
-            },
+            "extra": {},
             "idx": 1,
             "is_collapsed": false,
             "parent": 0,
@@ -34,9 +32,7 @@
             "children": [],
             "color": 4294967295,
             "comment": "",
-            "extra": {
-                "value": 1.0
-            },
+            "extra": {},
             "idx": 2,
             "is_collapsed": false,
             "parent": 1,
@@ -85,9 +81,7 @@
             "children": [],
             "color": 0,
             "comment": "",
-            "extra": {
-                "value": 1.0
-            },
+            "extra": {},
             "idx": 5,
             "is_collapsed": false,
             "parent": 3,
@@ -97,9 +91,7 @@
             "children": [],
             "color": 4294967295,
             "comment": "",
-            "extra": {
-                "value": 0.0
-            },
+            "extra": {},
             "idx": 6,
             "is_collapsed": false,
             "parent": 3,
@@ -109,9 +101,7 @@
             "children": [],
             "color": 0,
             "comment": "",
-            "extra": {
-                "value": 0.0
-            },
+            "extra": {},
             "idx": 7,
             "is_collapsed": false,
             "parent": 4,
@@ -121,9 +111,7 @@
             "children": [],
             "color": 0,
             "comment": "",
-            "extra": {
-                "value": 1.0
-            },
+            "extra": {},
             "idx": 8,
             "is_collapsed": false,
             "parent": 4,
@@ -133,9 +121,7 @@
             "children": [],
             "color": 0,
             "comment": "",
-            "extra": {
-                "value": 1.0
-            },
+            "extra": {},
             "idx": 10,
             "is_collapsed": false,
             "parent": 9,
@@ -145,14 +131,12 @@
             "children": [],
             "color": 0,
             "comment": "",
-            "extra": {
-                "value": 0.0
-            },
+            "extra": {},
             "idx": 11,
             "is_collapsed": false,
             "parent": 9,
             "type": "literal"
         }
     ],
-    "signature": "25-02-2020 22:20:52"
+    "signature": "26-02-2020 12:52:16"
 }

@@ -12,6 +12,7 @@
 #include <tree_editor/debugger/log_dialog.h>
 #include <tree_editor/debugger/debugger_main_window.h>
 #include <magic_enum.hpp>
+#include <tree_editor/debugger/debug_cmd.h>
 
 
 using namespace spiritsaway::tree_editor;
@@ -37,6 +38,7 @@ log_dialog::log_dialog(std::deque<node_trace_cmd > & in_cmd_queue, debugger_main
 	, cmd_queue(in_cmd_queue)
 	, _main_window(parent)
 	, _logger(parent->logger())
+	, _state_history(std::make_shared<tree_state_traces>())
 {
 	_view = new QTreeView(this);
 	auto vboxLayout = new QVBoxLayout(this);
@@ -47,6 +49,7 @@ log_dialog::log_dialog(std::deque<node_trace_cmd > & in_cmd_queue, debugger_main
 	setLayout(vboxLayout);
 	std::vector<std::pair<QString, Qt::ItemFlags>> headers;
 	headers.emplace_back("Timestamp", Qt::ItemFlag::NoItemFlags);
+	headers.emplace_back("Position", Qt::ItemFlag::NoItemFlags);
 	headers.emplace_back("Cmd", Qt::ItemFlag::NoItemFlags);
 	headers.emplace_back("Param", Qt::ItemFlag::NoItemFlags);
 
@@ -68,22 +71,22 @@ log_dialog::log_dialog(std::deque<node_trace_cmd > & in_cmd_queue, debugger_main
 bool log_dialog::push_cmd(node_trace_cmd one_cmd)
 {
 	std::vector<std::string> cmd_str;
-	auto[ts, cmd, param] = one_cmd;
-	cmd_str.push_back(format_timepoint(ts));
-	cmd_str.push_back(std::string(magic_enum::enum_name(cmd)));
-	cmd_str.push_back(encode(param).dump());
+	cmd_str.push_back(format_timepoint(one_cmd.ts));
+	cmd_str.push_back(std::to_string(one_cmd.tree_idx) + ":" + std::to_string(one_cmd.node_idx));
+	cmd_str.push_back(one_cmd.cmd);
+	cmd_str.push_back(serialize::encode(one_cmd.detail).dump());
 	std::vector<QVariant> row_data;
 	for (const auto& one_data : cmd_str)
 	{
 		row_data.push_back(QString::fromStdString(one_data));
 	}
-	if (_btree_history.push_cmd(one_cmd))
+	if (_state_history->push_cmd(one_cmd))
 	{
 		_model->appendRow(row_data);
 	}
 	else
 	{
-		_model->appendRow(row_data, _model->index(_btree_history._poll_states.size() - 1, 0));
+		_model->appendRow(row_data, _model->index(_state_history->_old_states.size() - 1, 0));
 	}
 	return true;
 }
@@ -91,17 +94,16 @@ bool log_dialog::push_cmd(node_trace_cmd one_cmd)
 void log_dialog::search_content()
 {
 	std::vector<std::string> select_strings;
-	for (std::size_t i = 0; i < _btree_history._poll_states.size(); i++)
+	for (std::size_t i = 0; i < _state_history->_old_states.size(); i++)
 	{
-		for (std::size_t j = 0; j < _btree_history._poll_states[i]._cmds.size(); j++)
+		for (std::size_t j = 0; j < _state_history->_old_states[i]->_cmds.size(); j++)
 		{
-
+			const auto& one_cmd = _state_history->_old_states[i]->_cmds[j];
 			std::string cmd_str;
-			const auto& [ts, cmd, param] = _btree_history._poll_states[i]._cmds[j];
 			//cmd_str += std::to_string(i) + " " + std::to_string(j) + " ";
-			cmd_str += format_timepoint(ts) + " ";
-			cmd_str += std::string(magic_enum::enum_name(cmd)) + " ";
-			cmd_str += encode(param).dump() + " ";
+			cmd_str += format_timepoint(one_cmd.ts) + " ";
+			cmd_str += one_cmd.cmd + " ";
+			cmd_str += serialize::encode(one_cmd.detail).dump() + " ";
 			cmd_str += get_comment(i, j) + " ";
 			select_strings.push_back(cmd_str);
 		}
@@ -121,16 +123,16 @@ void log_dialog::search_content()
 		}
 	}
 	std::uint32_t top_row, secondary_row;
-	for (top_row = 0; top_row < _btree_history._poll_states.size(); top_row++)
+	for (top_row = 0; top_row < _state_history->_old_states.size(); top_row++)
 	{
-		if (cur_row_idx < _btree_history._poll_states[top_row]._cmds.size())
+		if (cur_row_idx < _state_history->_old_states[top_row]->_cmds.size())
 		{
 			secondary_row = cur_row_idx;
 			break;
 		}
 		else
 		{
-			cur_row_idx -= _btree_history._poll_states[top_row]._cmds.size();
+			cur_row_idx -= _state_history->_old_states[top_row]->_cmds.size();
 		}
 	}
 	auto cur_model_idx = get_model_idx(top_row, cur_row_idx, 0);
@@ -166,7 +168,7 @@ std::string log_dialog::get_comment(std::size_t top_row, std::size_t secondary_r
 void log_dialog::show_trees()
 {
 	std::vector<std::string> trees;
-	const auto& all_trees = _btree_history._latest_state.cur_tree_indexes;
+	const auto& all_trees = _state_history->_latest_state->tree_indexes;
 	for (std::size_t i = 0; i < all_trees.size(); i++)
 	{
 		trees.push_back(std::to_string(i) + " " + all_trees[i]);
@@ -177,18 +179,22 @@ void log_dialog::show_trees()
 void log_dialog::goto_graph(std::uint32_t top_row, std::uint32_t secondary_row)
 {
 	std::cout << "goto graph top row " << top_row << " second row " << secondary_row;
-	const auto& cur_state = _btree_history._poll_states[top_row];
-	const auto& cur_cmd = cur_state._cmds[secondary_row];
-	auto[ts, cmd_type, params] = cur_cmd;
-	switch (cmd_type)
+	const auto& cur_state = _state_history->_old_states[top_row];
+	const auto& cur_cmd = cur_state->_cmds[secondary_row];
+	auto opt_cmd_type = magic_enum::enum_cast<nodes_cmd>(cur_cmd.cmd);
+	if (!opt_cmd_type)
 	{
-	case common::agent_cmd::node_enter:
-	case common::agent_cmd::node_leave:
-	case common::agent_cmd::node_action:
+		return;
+	}
+	switch (opt_cmd_type.value())
 	{
-		auto cur_tree_idx = std::get<serialize::any_int_type>(params[0]);
-		auto cur_node_idx = std::get<serialize::any_int_type>(params[1]);
-		auto tree_name = _btree_history._latest_state.cur_tree_indexes[cur_tree_idx];
+	case nodes_cmd::enter:
+	case nodes_cmd::leave:
+	case nodes_cmd::mutate:
+	{
+		auto cur_tree_idx = cur_cmd.tree_idx;
+		auto cur_node_idx = cur_cmd.node_idx;
+		auto tree_name = _state_history->_latest_state->tree_indexes[cur_tree_idx];
 		_main_window->focus_on(tree_name, cur_node_idx);
 		return;
 	}
@@ -218,7 +224,7 @@ void log_dialog::on_view_double_clicked(QModelIndex cur_idx)
 	}
 	_cur_top_row = top_row;
 	_cur_secondary_row = 0;
-	_cur_running_state = _btree_history._poll_states[top_row];
+	_cur_running_state = _state_history->_old_states[top_row];
 	debug_run_through(secondary_row + 1);
 	debug_stop();
 
@@ -249,8 +255,8 @@ void log_dialog::on_view_context_menu(const QPoint& pos)
 			secondary_row = 0;
 		}
 		//std::cout << "top_row is " << top_row << " secondary_row is " << secondary_row << std::endl;
-		auto cur_state = _btree_history._poll_states[top_row];
-		cur_state.run_cmd_to(secondary_row);
+		auto cur_state = _state_history->_old_states[top_row];
+		cur_state->run_cmd_to(secondary_row);
 		auto bb_action = menu->addAction("blackboard");
 		QObject::connect(bb_action, &QAction::triggered, this, [cur_state, this]()
 		{
@@ -274,10 +280,10 @@ void log_dialog::show_fronts(const std::shared_ptr<tree_state>& cur_state)
 {
 	std::vector<std::string> cur_fronts_str;
 	std::vector<std::pair<std::uint32_t, std::uint32_t>> temp_fronts;
-	for (auto [tree_idx, node_idx] : cur_state.cur_fronts)
+	for (auto [tree_idx, node_idx] : cur_state->_current_nodes)
 	{
 		temp_fronts.emplace_back(tree_idx, node_idx);
-		cur_fronts_str.push_back(cur_state.cur_tree_indexes[tree_idx] + " " + std::to_string(node_idx));
+		cur_fronts_str.push_back(cur_state->tree_indexes[tree_idx] + " " + std::to_string(node_idx));
 	}
 	auto cur_search_dialog = new search_select_dialog(cur_fronts_str, this);
 	auto result = cur_search_dialog->run();
@@ -290,7 +296,7 @@ void log_dialog::show_fronts(const std::shared_ptr<tree_state>& cur_state)
 		if (result == cur_fronts_str[i])
 		{
 			auto[tree_idx, node_idx] = temp_fronts[i];
-			_main_window->focus_on(cur_state.cur_tree_indexes[tree_idx], node_idx);
+			_main_window->focus_on(cur_state->tree_indexes[tree_idx], node_idx);
 			return;
 		}
 	}
@@ -300,9 +306,9 @@ void log_dialog::show_blackboard(const std::shared_ptr<tree_state>& cur_state)
 {
 
 	std::vector<std::string> cur_blackboard_str;
-	for (const auto & [bb_key, bb_value] : cur_state.cur_blackboard)
+	for (const auto & [bb_key, bb_value] : cur_state->vars())
 	{
-		cur_blackboard_str.push_back(bb_key + ": " + encode(bb_value).dump());
+		cur_blackboard_str.push_back(bb_key + ": " + bb_value.dump());
 	}
 	auto cur_search_dialog = new search_select_dialog(cur_blackboard_str, this);
 	auto result = cur_search_dialog->run();
@@ -322,7 +328,7 @@ void log_dialog::timer_poll()
 }
 void log_dialog::increate_row_idx()
 {
-	if (_cur_secondary_row < _btree_history._poll_states[_cur_top_row]._cmds.size())
+	if (_cur_secondary_row < _state_history->_old_states[_cur_top_row]->_cmds.size())
 	{
 		_cur_secondary_row++;
 
@@ -335,31 +341,31 @@ void log_dialog::increate_row_idx()
 }
 std::optional<node_trace_cmd> log_dialog::run_once_impl()
 {
-	if (_cur_top_row >= _btree_history._poll_states.size())
+	if (_cur_top_row >= _state_history->_old_states.size())
 	{
 		return {};
 	}
 	node_trace_cmd cur_cmd;
-	if (_cur_secondary_row < _btree_history._poll_states[_cur_top_row]._cmds.size())
+	if (_cur_secondary_row < _state_history->_old_states[_cur_top_row]->_cmds.size())
 	{
-		cur_cmd = _btree_history._poll_states[_cur_top_row]._cmds[_cur_secondary_row];
+		cur_cmd = _state_history->_old_states[_cur_top_row]->_cmds[_cur_secondary_row];
 
 	}
 	else
 	{
 		_cur_top_row++;
 		_cur_secondary_row = 0;
-		if (_cur_top_row >= _btree_history._poll_states.size())
+		if (_cur_top_row >= _state_history->_old_states.size())
 		{
 			return {};
 		}
-		if (_cur_secondary_row >= _btree_history._poll_states[_cur_top_row]._cmds.size())
+		if (_cur_secondary_row >= _state_history->_old_states[_cur_top_row]->_cmds.size())
 		{
 			return {};
 		}
-		cur_cmd = _btree_history._poll_states[_cur_top_row]._cmds[_cur_secondary_row];
+		cur_cmd = _state_history->_old_states[_cur_top_row]->_cmds[_cur_secondary_row];
 	}
-	_cur_running_state.run_one_cmd(cur_cmd);
+	_cur_running_state->run_one_cmd(cur_cmd);
 	return cur_cmd;
 }
 void log_dialog::debug_run_once()
@@ -371,26 +377,29 @@ void log_dialog::debug_run_once()
 		return;
 	}
 	auto cur_cmd = cur_cmd_opt.value();
-	auto[ts, cmd_type, params] = cur_cmd;
-	switch (cmd_type)
+	auto opt_cmd_type = magic_enum::enum_cast<nodes_cmd>(cur_cmd.cmd);
+	if (opt_cmd_type)
 	{
-	case behavior_tree::common::agent_cmd::node_enter:
-	case behavior_tree::common::agent_cmd::node_action:
-	{
-		auto cur_tree_idx = std::get<serialize::any_int_type>(params[0]);
-		auto cur_node_idx = std::get<serialize::any_int_type>(params[1]);
-		auto tree_name = _btree_history._latest_state.cur_tree_indexes[cur_tree_idx];
-		_main_window->focus_on(tree_name, cur_node_idx);
-		highlight_fronts(_cur_running_state);
-		break;
-	}
-	case behavior_tree::common::agent_cmd::node_leave:
-	{
-		highlight_fronts(_cur_running_state);
-		break;
-	}
-	default:
-		break;
+		switch (opt_cmd_type.value())
+		{
+		case nodes_cmd::enter:
+		case nodes_cmd::mutate:
+		{
+			auto cur_tree_idx = cur_cmd.tree_idx;
+			auto cur_node_idx = cur_cmd.node_idx;
+			auto tree_name = _state_history->_latest_state->tree_indexes[cur_tree_idx];
+			_main_window->focus_on(tree_name, cur_node_idx);
+			highlight_fronts(_cur_running_state);
+			break;
+		}
+		case nodes_cmd::leave:
+		{
+			highlight_fronts(_cur_running_state);
+			break;
+		}
+		default:
+			break;
+		}
 	}
 	increate_row_idx();
 	auto cur_model_idx = get_model_idx(_cur_top_row, _cur_secondary_row, 0);
@@ -413,24 +422,25 @@ void log_dialog::debug_run_through(std::size_t max_step)
 		}
 		increate_row_idx();
 		auto cur_cmd = cur_cmd_opt.value();
-		auto[ts, cmd_type, params] = cur_cmd;
-		if (cmd_type == behavior_tree::common::agent_cmd::node_enter || cmd_type == behavior_tree::common::agent_cmd::node_action)
+		if (cur_cmd.cmd == magic_enum::enum_name(nodes_cmd::enter) || cur_cmd.cmd == magic_enum::enum_name(nodes_cmd::mutate))
 		{
-			cur_tree_idx = std::get<serialize::any_int_type>(params[0]);
-			cur_node_idx = std::get<serialize::any_int_type>(params[1]);
+			cur_tree_idx = cur_cmd.tree_idx;
+
+			cur_node_idx = cur_cmd.node_idx;
 			// breakpoint
-			if (_main_window->node_has_breakpoint(_cur_running_state.cur_tree_indexes[cur_tree_idx], cur_node_idx))
+			if (_main_window->node_has_breakpoint(_cur_running_state->tree_indexes[cur_tree_idx], cur_node_idx))
 			{
 				break;
 			}
 		}
-		else if (cmd_type == behavior_tree::common::agent_cmd::node_leave)
+
+		else if (cur_cmd.cmd == magic_enum::enum_name(nodes_cmd::leave))
 		{
-			cur_tree_idx = std::get<serialize::any_int_type>(params[0]);
-			cur_node_idx = std::get<serialize::any_int_type>(params[1]);
+			cur_tree_idx = cur_cmd.tree_idx;
+			cur_node_idx = cur_cmd.node_idx;
 		}
 	}
-	auto tree_name = _cur_running_state.cur_tree_indexes[cur_tree_idx];
+	auto tree_name = _cur_running_state->tree_indexes[cur_tree_idx];
 	
 	_logger->info("debug_run_through focus on {}", cur_node_idx);
 	highlight_fronts(_cur_running_state);
@@ -445,27 +455,27 @@ void log_dialog::highlight_fronts(const std::shared_ptr<tree_state>& cur_state)
 	//{
 	//	if (std::find(cur_state.cur_fronts.begin(), cur_state.cur_fronts.end(), one_pre_front) == cur_state.cur_fronts.end())
 	//	{
-	//		_main_window->highlight_node(_btree_history._latest_state.cur_tree_indexes[one_pre_front.first], one_pre_front.second, color_from_uint(0));
+	//		_main_window->highlight_node(_state_history->_latest_state->tree_indexes[one_pre_front.first], one_pre_front.second, color_from_uint(0));
 	//	}
 	//}
 	//for (auto one_now_front : cur_state.cur_fronts)
 	//{
 	//	if (std::find(_pre_fronts.begin(), _pre_fronts.end(), one_now_front) == _pre_fronts.end())
 	//	{
-	//		_main_window->highlight_node(_btree_history._latest_state.cur_tree_indexes[one_now_front.first], one_now_front.second, Qt::magenta);
+	//		_main_window->highlight_node(_state_history->_latest_state->tree_indexes[one_now_front.first], one_now_front.second, Qt::magenta);
 	//	}
 	//}
 	for (auto one_pre_front : _pre_fronts)
 	{
-		_main_window->highlight_node(_btree_history._latest_state.cur_tree_indexes[one_pre_front.first], one_pre_front.second, color_from_uint(0));
+		_main_window->highlight_node(_state_history->_latest_state->tree_indexes[one_pre_front.first], one_pre_front.second, color_from_uint(0));
 	}
-	for (auto one_now_front : cur_state.cur_fronts)
+	for (auto one_now_front : cur_state->_current_nodes)
 	{
-		_main_window->highlight_node(_btree_history._latest_state.cur_tree_indexes[one_now_front.first], one_now_front.second, Qt::magenta);
+		_main_window->highlight_node(_state_history->_latest_state->tree_indexes[one_now_front.first], one_now_front.second, Qt::magenta);
 
 	}
-	_logger->info("pre_fronts is {} new fronts is {}", serialize::encode(_pre_fronts).dump(), serialize::encode(cur_state.cur_fronts).dump());
-	_pre_fronts = cur_state.cur_fronts;
+	_logger->info("pre_fronts is {} new fronts is {}", serialize::encode(_pre_fronts).dump(), serialize::encode(cur_state->_current_nodes).dump());
+	_pre_fronts = cur_state->_current_nodes;
 	_main_window->refresh();
 	
 }

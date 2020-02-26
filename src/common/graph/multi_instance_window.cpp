@@ -4,6 +4,10 @@
 #include <tree_editor/common/choice_manager.h>
 #include <tree_editor/common/dialogs/line_dialog.h>
 #include <qfiledialog.h>
+#include <deque>
+#include <fstream>
+#include <streambuf>
+#include <any_container/decode.h>
 
 using namespace std;
 using namespace spiritsaway::tree_editor;
@@ -29,6 +33,23 @@ bool multi_instance_window::load_config()
 		QString::fromStdString("no content checker for config file"));
 	return false;
 
+}
+std::variant<std::string, json::object_t> multi_instance_window::load_json_file(const std::string& file_path) const
+{
+	std::ifstream config_file(file_path);
+	std::string file_content((std::istreambuf_iterator<char>(config_file)), std::istreambuf_iterator<char>());
+	if (!json::accept(file_content))
+	{
+		return "config file should be json";
+		
+	}
+	auto json_content = json::parse(file_content);
+	if (!json_content.is_object())
+	{
+		return "config content should be json dict";
+		
+	}
+	return json_content.get<json::object_t>();
 }
 void multi_instance_window::add_instance(tree_instance* _cur_instance)
 {
@@ -194,7 +215,129 @@ void multi_instance_window::action_open_handler()
 		return;
 	}
 }
+basic_node* multi_instance_window::create_node_from_desc(const basic_node_desc& cur_desc, basic_node* parent)
+{
+	auto cur_config = node_config_repo::instance().get_config(cur_desc.type);
+	if (!cur_config)
+	{
+		return nullptr;
+	}
+	auto cur_node = new config_node(cur_config.value(), dynamic_cast<config_node*>(parent), cur_desc.idx);
+	if (parent)
+	{
+		parent->add_child(cur_node);
+	}
+	cur_node->color = cur_desc.color;
+	cur_node->_is_collapsed = cur_desc.is_collpased;
+	cur_node->comment = cur_desc.comment;
+	cur_node->refresh_editable_items();
+	cur_node->set_extra(json(cur_desc.extra));
+	return cur_node;
+}
 std::string multi_instance_window::action_open_impl()
 {
+	auto fileName = QFileDialog::getOpenFileName(this,
+		tr("Open Math Tree"), QString::fromStdString(data_folder.string()), tr("Json File (*.json)"));
+	if (!fileName.size())
+	{
+		return "invalid file name";
+	}
+	if (already_open(fileName.toStdString()))
+	{
+		return "file already open";
+	}
+	std::ifstream tree_file(fileName.toStdString());
+	std::string tree_file_content((std::istreambuf_iterator<char>(tree_file)), std::istreambuf_iterator<char>());
+	if (!json::accept(tree_file_content))
+	{
+		return "tree file should be json";
+
+	}
+	auto tree_json_content = json::parse(tree_file_content);
+	if (!tree_json_content.is_object())
+	{
+		return "tree content should be json dict";
+
+	}
+	auto node_info_iter = tree_json_content.find("nodes");
+	if (node_info_iter == tree_json_content.end())
+	{
+		return "tree content should has key nodes";
+
+	}
+	std::vector<basic_node_desc> nodes_info;
+	if (!spiritsaway::serialize::decode(*node_info_iter, nodes_info))
+	{
+		return "tree content cant decode node content";
+
+	}
+	basic_node_desc cur_root_desc;
+	bool found_root = false;
+	std::unordered_map<std::uint32_t, basic_node_desc> node_relation;
+	for (auto one_desc : nodes_info)
+	{
+		node_relation[one_desc.idx] = one_desc;
+		if (one_desc.type == "root")
+		{
+			cur_root_desc = one_desc;
+			if (found_root)
+			{
+				return "tree content has multi root node";
+
+			}
+			found_root = true;
+		}
+	}
+	if (!found_root)
+	{
+		return "tree content has no root node";
+
+	}
+	std::deque<std::uint32_t> idx_queue;
+	idx_queue.push_back(cur_root_desc.idx);
+
+	std::unordered_map<std::uint32_t, basic_node*> temp_nodes;
+	basic_node* cur_root = nullptr;
+	while (!idx_queue.empty())
+	{
+		auto cur_idx = idx_queue.front();
+		idx_queue.pop_front();
+		if (temp_nodes.find(cur_idx) != temp_nodes.end())
+		{
+			return "tree content has no cyclic relation";
+
+		}
+		auto cur_desc = node_relation[cur_idx];
+		basic_node* cur_parent_p = nullptr;
+		if (cur_desc.parent)
+		{
+			auto parent_idx = cur_desc.parent.value();
+			auto cur_parent_iter = temp_nodes.find(parent_idx);
+			if (cur_parent_iter == temp_nodes.end())
+			{
+				return "tree content has no cyclic relation";
+
+			}
+			cur_parent_p = cur_parent_iter->second;
+
+		}
+		auto cur_node = create_node_from_desc(cur_desc, cur_parent_p);
+		if (!cur_node)
+		{
+			return "cant create node from desc " + cur_desc.encode().dump();
+		}
+
+		temp_nodes[cur_desc.idx] = cur_node;
+		for (auto one_child : cur_desc.children)
+		{
+			idx_queue.push_back(one_child);
+		}
+		if (!cur_root)
+		{
+			cur_root = cur_node;
+		}
+	}
+
+	tree_instance* cur_tree_instance = new tree_instance(fileName.toStdString(), cur_root, this);
 	return "";
 }

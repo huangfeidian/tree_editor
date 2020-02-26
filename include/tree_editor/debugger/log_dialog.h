@@ -48,7 +48,7 @@ namespace spiritsaway::tree_editor
 		std::shared_ptr<tree_state> _cur_running_state;
 		std::size_t _cur_top_row = 0;
 		std::size_t _cur_secondary_row = 0;
-		std::shared_ptr<tree_state_traces> _btree_history;
+		std::shared_ptr<tree_state_traces> _state_history;
 		decltype(_cur_running_state->_current_nodes) _pre_fronts;
 		std::string get_comment(std::size_t top_row, std::size_t secondary_row) const;
 		QModelIndex get_model_idx(std::size_t top_row, std::size_t secondary_row, std::size_t column) const;

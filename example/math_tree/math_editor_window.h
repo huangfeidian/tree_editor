@@ -8,10 +8,8 @@ namespace spiritsaway::tree_editor
 	{
 	public:
 		bool load_config();
-		std::string action_new_impl();
-		std::string action_open_impl();
+		basic_node* create_node_by_desc(const basic_node_desc& desc, basic_node* parent);
 	private:
-		std::filesystem::path data_folder;
 		std::string new_file_name();
 	};
 }

@@ -68,6 +68,7 @@ namespace spiritsaway::tree_editor
 		std::size_t max_child_num;
 		std::size_t min_child_num;
 		std::string comment;
+		std::uint32_t color = 0;
 		std::shared_ptr<editable_item> editable_info;
 		static std::unordered_map<std::string, node_config> configured_nodes;
 	};

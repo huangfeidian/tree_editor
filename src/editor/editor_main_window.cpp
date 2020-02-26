@@ -313,5 +313,23 @@ void editor_main_window::action_cut_handler()
 
 std::string editor_main_window::action_new_impl()
 {
+	auto opt_root_config = node_config_repo::instance().get_config("root");
+	if (!opt_root_config)
+	{
+		return "root node desc not present, cant create new file";
+
+	}
+	const auto& cur_root_config = opt_root_config.value();
+	auto full_file = data_folder / new_file_name();
+	basic_node_desc cur_root_desc;
+	cur_root_desc.idx = 0;
+	cur_root_desc.type = "root";
+	cur_root_desc.color = cur_root_config.color;
+	auto cur_root = create_node_from_desc(cur_root_desc, nullptr);
+	if (!cur_root)
+	{
+		return "cant create root node";
+	}
+	tree_instance* cur_tree_instance = new tree_instance(full_file.string(), cur_root, this);
 	return "";
 }

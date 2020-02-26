@@ -11,6 +11,7 @@
 
 #include <tree_editor/debugger/debugger_main_window.h>
 #include <tree_editor/debugger/log_dialog.h>
+#include <tree_editor/common/graph/tree_instance.h>
 
 using namespace spiritsaway::tree_editor;
 
@@ -78,10 +79,10 @@ void debugger_main_window::init_actions()
 	});
 
 }
-bool debugger_main_window::focus_on(const std::string& tree_name, std::uint32_t node_idx)
+tree_instance* debugger_main_window::ensure_file_open(const std::string& tree_name)
 {
-	const auto& cur_btree_config = spiritsaway::tree_editor::btree_config::instance();
-	std::filesystem::path cur_file_path = cur_btree_config.btree_folder / tree_name;
+
+	auto cur_file_path = data_folder / tree_name;
 	std::string cur_file_path_str = cur_file_path.string();
 	auto opt_ins_idx = already_open(cur_file_path_str);
 	tree_instance* cur_ins;
@@ -98,6 +99,16 @@ bool debugger_main_window::focus_on(const std::string& tree_name, std::uint32_t 
 			return false;
 		}
 		cur_ins = new tree_instance(cur_file_path_str, cur_root, this);
+	}
+	return cur_ins;
+}
+bool debugger_main_window::focus_on(const std::string& tree_name, std::uint32_t node_idx)
+{
+
+	auto cur_ins = ensure_file_open(tree_name);
+	if (!cur_ins)
+	{
+		return false;
 	}
 	cur_ins->focus_on(node_idx);
 	return true;

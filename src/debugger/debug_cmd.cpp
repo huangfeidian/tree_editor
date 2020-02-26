@@ -154,6 +154,10 @@ bool variable_memory::decode(const json& data)
 {
 	return serialize::decode(data, _data);
 }
+const std::unordered_map<std::string, json>& variable_memory::data() const
+{
+	return _data;
+}
 
 json node_trace_cmd::encode() const
 {
@@ -165,6 +169,7 @@ json node_trace_cmd::encode() const
 	result.emplace_back(detail);
 	return result;
 }
+
 bool node_trace_cmd::decode(const json& data)
 {
 	if (!data.is_array())
@@ -289,12 +294,25 @@ bool tree_state::run_one_cmd(const node_trace_cmd& _cmd)
 		return false;
 	}
 }
+const std::unordered_map<std::string, json>& tree_state::vars() const
+{
+	return _vars.data();
+}
+
 void tree_state::run_cmd_to(std::uint32_t cmd_idx)
 {
 	for (std::size_t i = 0; i <= cmd_idx && i < _cmds.size(); i++)
 	{
 		run_one_cmd(_cmds[i]);
 	}
+}
+std::shared_ptr<tree_state> tree_state::snapshot() const
+{
+	auto result = std::make_shared<tree_state>();
+	result->_vars = _vars;
+	result->_current_nodes = _current_nodes;
+	result->tree_indexes = tree_indexes;
+	return result;
 }
 bool tree_state_traces::push_cmd(const node_trace_cmd& _cmd)
 {
