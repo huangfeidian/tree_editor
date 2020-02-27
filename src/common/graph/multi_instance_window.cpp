@@ -199,7 +199,7 @@ void multi_instance_window::action_goto_handler()
 void multi_instance_window::action_open_handler()
 {
 	auto fileName = QFileDialog::getOpenFileName(this,
-		tr("Open Math Tree"), QString::fromStdString(data_folder.string()), tr("Json File (*.json)"));
+		tr("Open Tree File"), QString::fromStdString(data_folder.string()), tr("Json File (*.json)"));
 	if (!fileName.size())
 	{
 		std::string error_info = "empty file name";
@@ -225,7 +225,6 @@ void multi_instance_window::action_open_handler()
 	else
 	{
 		auto cur_ins = std::get<tree_instance*>(open_result);
-		add_instance(cur_ins);
 	}
 }
 basic_node* multi_instance_window::create_node_from_desc(const basic_node_desc& cur_desc, basic_node* parent)

@@ -135,7 +135,7 @@ bool math_editor_window::load_config()
 	return true;
 }
 
-basic_node* math_editor_window::create_node_by_desc(const basic_node_desc& cur_desc, basic_node* parent)
+basic_node* math_editor_window::create_node_from_desc(const basic_node_desc& cur_desc, basic_node* parent)
 {
 	auto cur_config = node_config_repo::instance().get_config(cur_desc.type);
 	if (!cur_config)

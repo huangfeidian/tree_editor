@@ -8,7 +8,7 @@ namespace spiritsaway::tree_editor
 	{
 	public:
 		bool load_config();
-		basic_node* create_node_by_desc(const basic_node_desc& desc, basic_node* parent);
+		basic_node* create_node_from_desc(const basic_node_desc& desc, basic_node* parent) override;
 	private:
 		std::string new_file_name();
 	};

@@ -51,7 +51,7 @@ namespace spiritsaway::tree_editor
 
 		virtual bool check_edit();
 		virtual bool set_extra(const json::object_t& extra);
-		basic_node* get_root() const;
+		const basic_node* get_root() const;
 		virtual void refresh_editable_items();
 		virtual std::size_t max_child_num() const = 0;
 		virtual std::size_t min_child_num() const = 0;

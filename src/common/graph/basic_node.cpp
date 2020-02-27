@@ -225,10 +225,10 @@ void basic_node::move_child(basic_node* in_child, bool is_up)
 
 }
 
-basic_node* basic_node::get_root() const
+const basic_node* basic_node::get_root() const
 {
-	auto p = _parent;
-	while (p)
+	auto p = this;
+	while (p->_parent)
 	{
 		p = p->_parent;
 	}
