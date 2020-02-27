@@ -9,19 +9,20 @@
 
 namespace spiritsaway::tree_editor
 {
+	
 	using namespace spiritsaway::http;
 	class debug_connection : public spiritsaway::http::http_connection
 	{
 		
 	private:
-		std::deque<node_trace_cmd>& _cmd_queue;
+		debug_cmd_reciever _cmd_queue;
 	public:
 		static std::shared_ptr<debug_connection> create(asio::ip::tcp::socket&& _in_client_socket, std::shared_ptr<spdlog::logger> logger, std::uint32_t in_connection_idx, std::uint32_t _in_timeout, std::string log_pre, void* _in_cmd_queue)
 
 		{
-			return std::make_shared<debug_connection>(std::move(_in_client_socket), logger, in_connection_idx, _in_timeout, log_pre, *reinterpret_cast<std::deque<node_trace_cmd>*>(_in_cmd_queue));
+			return std::make_shared<debug_connection>(std::move(_in_client_socket), logger, in_connection_idx, _in_timeout, log_pre, *reinterpret_cast<debug_cmd_reciever*>(_in_cmd_queue));
 		}
-		debug_connection(asio::ip::tcp::socket&& in_client_socket, std::shared_ptr<spdlog::logger> logger, std::uint32_t in_connection_idx, std::uint32_t _in_timeout, std::string log_pre, std::deque<node_trace_cmd>& _in_cmd_queue)
+		debug_connection(asio::ip::tcp::socket&& in_client_socket, std::shared_ptr<spdlog::logger> logger, std::uint32_t in_connection_idx, std::uint32_t _in_timeout, std::string log_pre, debug_cmd_reciever& _in_cmd_queue)
 			: http_connection(std::move(in_client_socket), logger, in_connection_idx, 1, "debug_connection")
 			, _cmd_queue(_in_cmd_queue)
 		{
@@ -75,11 +76,7 @@ namespace spiritsaway::tree_editor
 					error_desc = "cmds format not match";
 					break;
 				}
-
-				for (auto one_cmd : cmds)
-				{
-					_cmd_queue.push_back(one_cmd);
-				}
+				_cmd_queue(entity_id, cmds);
 				break;
 			}
 

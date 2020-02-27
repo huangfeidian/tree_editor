@@ -12,6 +12,7 @@
 #include <tree_editor/debugger/debugger_main_window.h>
 #include <tree_editor/debugger/log_dialog.h>
 #include <tree_editor/common/graph/tree_instance.h>
+#include <fstream>
 
 using namespace spiritsaway::tree_editor;
 
@@ -21,6 +22,10 @@ debugger_main_window::debugger_main_window(QWidget* parent)
 {
 	init_widgets();
 	init_actions();
+	_reciever = [this](const std::string& entity_id, const std::vector<node_trace_cmd>& _cmds)
+	{
+		add_cmds(entity_id, _cmds);
+	};
 }
 
 void debugger_main_window::init_widgets()
@@ -204,7 +209,63 @@ void debugger_main_window::action_http_handler()
 			QString::fromStdString(notify_info));
 		return;
 	}
-	_http_server = std::make_shared<http_server<debug_connection, std::deque<node_trace_cmd>>>(_asio_context, "tree_debugger", result, 1, &_tree_cmds);
+	_http_server = std::make_shared<http_server<debug_connection, debug_cmd_reciever>>(_asio_context, "tree_debugger", result, 1, &_reciever);
 	_http_server->run();
 	return;
+}
+void debugger_main_window::add_cmds(const std::string& entity_id, const std::vector<node_trace_cmd>& _temp_cmds)
+{
+	if (entity_id != _debug_entity_id)
+	{
+		save_debug_file();
+		reset_debug_entity(entity_id);
+	}
+	_total_cmds.insert(_total_cmds.end(), _temp_cmds.begin(), _temp_cmds.end());
+	_tree_cmds.insert(_tree_cmds.end(), _temp_cmds.begin(), _temp_cmds.end());
+}
+void debugger_main_window::save_debug_file()
+{
+	if (_debug_entity_id.size())
+	{
+		json::object_t result;
+		result["entity_id"] = _debug_entity_id;
+		time_t rawtime;
+		struct tm * timeinfo;
+		char buffer[80];
+
+		time(&rawtime);
+		timeinfo = localtime(&rawtime);
+
+		strftime(buffer, sizeof(buffer), "%d-%m-%Y-%H-%M-%S", timeinfo);
+
+		result["ts"] = std::string(buffer);
+		result["debug_cmds"] = serialize::encode(_total_cmds);
+		std::string file_name = "debug_cmds_" + _debug_entity_id + "_" + std::string(buffer) + ".json";
+		std::ofstream output_stream(data_folder / file_name);
+		output_stream << json(result).dump(4) << std::endl;
+		output_stream.close();
+
+	}
+}
+void debugger_main_window::reset_debug_entity(const std::string& new_entity_id)
+{
+	_log_viewer->reset();
+	_debug_entity_id = new_entity_id;
+	_tree_cmds.clear();
+	_total_cmds.clear();
+}
+void debugger_main_window::action_close_all_handler()
+{
+	multi_instance_window::action_close_all_handler();
+	
+	if (_debug_source == spiritsaway::tree_editor::debug_source::http_debug)
+	{
+		_http_server.reset();
+		save_debug_file();
+		
+	}
+	reset_debug_entity("");
+	_debug_source = debug_source::no_debug;
+
+	
 }

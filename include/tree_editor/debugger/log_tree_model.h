@@ -41,7 +41,7 @@ namespace spiritsaway::tree_editor
         bool removeRows(int position, int rows,
                         const QModelIndex &parent = QModelIndex()) override;
 		bool appendRow(const std::vector<QVariant>& new_row, const QModelIndex& parent = QModelIndex());
-
+        void resetData();
     private:
 
         log_item *getItem(const QModelIndex &index) const;

@@ -483,3 +483,14 @@ void log_dialog::debug_stop()
 {
 	_cur_debug_mode = debug_mode::stop;
 }
+void log_dialog::reset()
+{
+	_model->resetData();
+	_cur_debug_mode = debug_mode::stop;
+	_cur_top_row = 0;
+	_cur_secondary_row = 0;
+	_cur_running_state = std::make_shared<tree_state>();
+	_state_history = std::make_shared<tree_state_traces>();
+	_pre_fronts.clear();
+	_main_window->refresh();
+}

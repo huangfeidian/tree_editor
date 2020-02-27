@@ -37,6 +37,8 @@ namespace spiritsaway::tree_editor
 		void debug_stop();
 		void debug_run_through(std::size_t max_step = 1000);
 		void debug_run_once();
+	public:
+		void reset();
 	private:
 		std::deque<node_trace_cmd>& cmd_queue;
 		QTimer* _poll_timer;

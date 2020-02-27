@@ -6,6 +6,8 @@
 #include <unordered_set>
 
 #include <nlohmann/json.hpp>
+#include <functional>
+
 using json = nlohmann::json;
 namespace spiritsaway::tree_editor
 {
@@ -97,5 +99,7 @@ namespace spiritsaway::tree_editor
 		std::shared_ptr<tree_state> _latest_state;
 		virtual bool push_cmd(const node_trace_cmd& _cmd);
 	};
+	using debug_cmd_reciever = std::function<void(const std::string&, const std::vector<node_trace_cmd>&)>;
+
 }
 

@@ -146,6 +146,11 @@ bool log_tree_model::removeRows(int position, int rows, const QModelIndex &paren
     return success;
 }
 
+void log_tree_model::resetData()
+{
+	auto cur_row_count = rootItem->childCount();
+    removeRows(0, cur_row_count, QModelIndex());
+}
 //! [8]
 int log_tree_model::rowCount(const QModelIndex &parent) const
 {

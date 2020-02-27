@@ -58,11 +58,11 @@ namespace spiritsaway::tree_editor
 	public slots:
 		void sub_window_activated(QMdiSubWindow* cur_window);
 		void closeEvent(QCloseEvent* e);
-		void action_close_handler();
-		void action_close_all_handler();
-		void action_find_handler();
-		void action_goto_handler();
-		void action_open_handler();
+		virtual void action_close_handler();
+		virtual void action_close_all_handler();
+		virtual void action_find_handler();
+		virtual void action_goto_handler();
+		virtual void action_open_handler();
 	protected:
 		virtual std::variant<std::string, tree_instance*> action_open_impl(const std::string& file_name);
 
