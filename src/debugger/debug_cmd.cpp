@@ -1,4 +1,4 @@
-﻿#include <tree_editor/debugger/debug_cmd.h>
+﻿#include <tree_editor/common/debug_cmd.h>
 #include <magic_enum.hpp>
 #include <any_container/decode.h>
 

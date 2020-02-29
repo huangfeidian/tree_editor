@@ -6,7 +6,7 @@
 #include <qtimer.h>
 #include <optional>
 
-#include <tree_editor/debugger/debug_cmd.h>
+#include <tree_editor/common/debug_cmd.h>
 #include <spdlog/spdlog.h>
 
 #include <deque>

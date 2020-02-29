@@ -39,7 +39,7 @@ namespace spiritsaway::tree_editor
 		Ui::debugger_main_window *ui;
 		log_dialog* _log_viewer;
 		debug_source _debug_source = debug_source::no_debug;
-		std::shared_ptr<http_server<debug_connection, debug_cmd_reciever>> _http_server;
+		std::shared_ptr<http_server<debug_connection, debug_cmd_receiver>> _http_server;
 		asio::io_context _asio_context;
 	public:
 		std::deque<node_trace_cmd> _tree_cmds;
@@ -54,7 +54,7 @@ namespace spiritsaway::tree_editor
 		virtual void add_cmds(const std::string& entity_id, const std::vector<node_trace_cmd>& _temp_cmds);
 	private:
 		void set_debug_mode(debug_mode _new_mode);
-		debug_cmd_reciever _reciever;
+		debug_cmd_receiver _reciever;
 	public:
 		bool is_read_only() const;
 	public slots:

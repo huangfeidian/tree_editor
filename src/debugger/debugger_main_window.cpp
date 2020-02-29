@@ -209,7 +209,7 @@ void debugger_main_window::action_http_handler()
 			QString::fromStdString(notify_info));
 		return;
 	}
-	_http_server = std::make_shared<http_server<debug_connection, debug_cmd_reciever>>(_asio_context, "tree_debugger", result, 1, &_reciever);
+	_http_server = std::make_shared<http_server<debug_connection, debug_cmd_receiver>>(_asio_context, "tree_debugger", result, 1, &_reciever);
 	_http_server->run();
 	return;
 }

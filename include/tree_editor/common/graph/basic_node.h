@@ -4,25 +4,14 @@
 #include <string>
 #include <vector>
 #include <nlohmann/json.hpp>
+#include "basic_node_desc.h"
 using json = nlohmann::json;
 
 namespace spiritsaway::tree_editor
 {
 	class struct_items;
 	class editable_item;
-	struct basic_node_desc
-	{
-		std::vector<std::uint32_t> children;
-		std::uint32_t idx;
-		std::string type;
-		std::string comment;
-		std::uint32_t color;
-		std::optional<std::uint32_t> parent;
-		bool is_collpased = false;
-		std::unordered_map<std::string, json> extra;
-		virtual json encode() const;
-		virtual bool decode(const json& data);
-	};
+
 	class basic_node
 	{
 	public:

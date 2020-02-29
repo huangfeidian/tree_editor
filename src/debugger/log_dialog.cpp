@@ -12,7 +12,7 @@
 #include <tree_editor/debugger/log_dialog.h>
 #include <tree_editor/debugger/debugger_main_window.h>
 #include <magic_enum.hpp>
-#include <tree_editor/debugger/debug_cmd.h>
+#include <tree_editor/common/debug_cmd.h>
 
 
 using namespace spiritsaway::tree_editor;

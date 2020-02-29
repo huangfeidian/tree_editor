@@ -4,7 +4,7 @@
 #include <http_server/http_server.h>
 #include <http_server/http_connection.h>
 #include <any_container/decode.h>
-#include <tree_editor/debugger/debug_cmd.h>
+#include <tree_editor/common/debug_cmd.h>
 #include <queue>
 
 namespace spiritsaway::tree_editor
@@ -15,14 +15,14 @@ namespace spiritsaway::tree_editor
 	{
 		
 	private:
-		debug_cmd_reciever _cmd_queue;
+		debug_cmd_receiver _cmd_queue;
 	public:
 		static std::shared_ptr<debug_connection> create(asio::ip::tcp::socket&& _in_client_socket, std::shared_ptr<spdlog::logger> logger, std::uint32_t in_connection_idx, std::uint32_t _in_timeout, std::string log_pre, void* _in_cmd_queue)
 
 		{
-			return std::make_shared<debug_connection>(std::move(_in_client_socket), logger, in_connection_idx, _in_timeout, log_pre, *reinterpret_cast<debug_cmd_reciever*>(_in_cmd_queue));
+			return std::make_shared<debug_connection>(std::move(_in_client_socket), logger, in_connection_idx, _in_timeout, log_pre, *reinterpret_cast<debug_cmd_receiver*>(_in_cmd_queue));
 		}
-		debug_connection(asio::ip::tcp::socket&& in_client_socket, std::shared_ptr<spdlog::logger> logger, std::uint32_t in_connection_idx, std::uint32_t _in_timeout, std::string log_pre, debug_cmd_reciever& _in_cmd_queue)
+		debug_connection(asio::ip::tcp::socket&& in_client_socket, std::shared_ptr<spdlog::logger> logger, std::uint32_t in_connection_idx, std::uint32_t _in_timeout, std::string log_pre, debug_cmd_receiver& _in_cmd_queue)
 			: http_connection(std::move(in_client_socket), logger, in_connection_idx, 1, "debug_connection")
 			, _cmd_queue(_in_cmd_queue)
 		{
