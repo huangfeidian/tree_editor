@@ -202,6 +202,8 @@ namespace spiritsaway::tree_editor
 		enter,
 		leave,
 		mutate,//change internal info of one node
+		reset,
+		group_by,
 	};
 	//first is mutate cmd second is mutate detail
 	struct node_trace_cmd
@@ -359,6 +361,16 @@ namespace spiritsaway::tree_editor
 				}
 				return false;
 			}
+			case nodes_cmd::reset:
+			{
+				_vars.reset({});;
+				_current_nodes.clear();
+				return true;
+			}
+			case nodes_cmd::group_by:
+			{
+				return true;
+			}
 			default:
 				return false;
 			}
@@ -401,6 +413,7 @@ namespace spiritsaway::tree_editor
 				switch (cur_cmd_type)
 				{
 				case spiritsaway::tree_editor::nodes_cmd::snapshot:
+				case nodes_cmd::group_by:
 				{
 					auto new_state = _latest_state->snapshot();
 					new_state->_cmds.push_back(_cmd);
