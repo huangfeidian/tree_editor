@@ -71,6 +71,9 @@ add_executable(math_tree ${UI_FILES}  ${SHARE_SRC_FILES} ${SHARE_HEADER_FILES} $
 target_link_libraries(math_tree PRIVATE Qt5::Widgets)
 target_link_libraries(math_tree PUBLIC nlohmann_json::nlohmann_json any_container)
 
+add_executable(debug_server ${PROJECT_SOURCE_DIR}/example/debug_server/echo_debug_server.cpp)
+target_link_libraries(debug_server PUBLIC nlohmann_json::nlohmann_json any_container http_server)
+
 foreach(p LIB INCLUDE)
 	set(var CMAKE_INSTALL_${p}DIR)
 	if(NOT IS_ABSOLUTE "${${var}}")

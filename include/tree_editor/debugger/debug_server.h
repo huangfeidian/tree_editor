@@ -95,6 +95,8 @@ namespace spiritsaway::tree_editor
 			_cur_response.add_header_value("Content-Type", "text/html");
 			_cur_response.add_header_value("Server", "Http Server");
 			auto request_str = _header.encode_to_data();
+
+			response_str = _cur_response.encode_to_data(request_str);
 		}
 	};
 }
