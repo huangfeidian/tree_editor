@@ -210,7 +210,7 @@ void log_dialog::on_view_double_clicked(QModelIndex cur_idx)
 		return;
 	}
 	auto parent = cur_idx.parent();
-	//std::cout << "parent row is " << parent.row() << std::endl;
+	std::cout << "parent row is " << parent.row() << std::endl;
 	std::uint32_t top_row, secondary_row;
 	if (parent.isValid())
 	{
@@ -467,7 +467,11 @@ void log_dialog::highlight_fronts(const std::shared_ptr<tree_state>& cur_state)
 	//}
 	for (auto one_pre_front : _pre_fronts)
 	{
-		_main_window->highlight_node(_state_history->_latest_state->tree_indexes[one_pre_front.first], one_pre_front.second, color_from_uint(0));
+		if (cur_state->_current_nodes.find(one_pre_front) != cur_state->_current_nodes.end())
+		{
+			_main_window->highlight_node(_state_history->_latest_state->tree_indexes[one_pre_front.first], one_pre_front.second, color_from_uint(0));
+		}
+		
 	}
 	for (auto one_now_front : cur_state->_current_nodes)
 	{
@@ -492,5 +496,5 @@ void log_dialog::reset()
 	_cur_running_state = std::make_shared<tree_state>();
 	_state_history = std::make_shared<tree_state_traces>();
 	_pre_fronts.clear();
-	_main_window->refresh();
+	//_main_window->refresh();
 }

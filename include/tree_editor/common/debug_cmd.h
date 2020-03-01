@@ -203,7 +203,7 @@ namespace spiritsaway::tree_editor
 		leave,
 		mutate,//change internal info of one node
 		reset,
-		group_by,
+		group_begin,
 	};
 	//first is mutate cmd second is mutate detail
 	struct node_trace_cmd
@@ -272,7 +272,6 @@ namespace spiritsaway::tree_editor
 			result->tree_indexes = tree_indexes;
 			return result;
 		}
-
 		virtual bool run_one_cmd(const node_trace_cmd& _cmd)
 		{
 			auto opt_cmd_type = magic_enum::enum_cast<nodes_cmd>(_cmd.cmd);
@@ -367,7 +366,7 @@ namespace spiritsaway::tree_editor
 				_current_nodes.clear();
 				return true;
 			}
-			case nodes_cmd::group_by:
+			case nodes_cmd::group_begin:
 			{
 				return true;
 			}
@@ -413,7 +412,7 @@ namespace spiritsaway::tree_editor
 				switch (cur_cmd_type)
 				{
 				case spiritsaway::tree_editor::nodes_cmd::snapshot:
-				case nodes_cmd::group_by:
+				case nodes_cmd::group_begin:
 				{
 					auto new_state = _latest_state->snapshot();
 					new_state->_cmds.push_back(_cmd);
@@ -424,7 +423,7 @@ namespace spiritsaway::tree_editor
 				default:
 				{
 					_latest_state->run_one_cmd(_cmd);
-					_old_states.back()->run_one_cmd(_cmd);
+					_old_states.back()->_cmds.push_back(_cmd);
 					return false;
 				}
 
