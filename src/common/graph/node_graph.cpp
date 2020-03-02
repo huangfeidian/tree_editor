@@ -220,7 +220,7 @@ void node_graph::set_un_collapsed()
 }
 void node_graph::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
-	_manager->_logger->debug("node {} mouseDoubleClickEventn with show_info {}", _model->_idx, _model->_show_widget->to_json().dump());
+	//_manager->_logger->debug("node {} mouseDoubleClickEventn with show_info {}", _model->_idx, _model->_show_widget->to_json().dump());
 	if (!_model->_show_widget->empty())
 	{
 		set_editable();

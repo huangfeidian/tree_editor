@@ -257,10 +257,10 @@ void log_dialog::on_view_context_menu(const QPoint& pos)
 		//std::cout << "top_row is " << top_row << " secondary_row is " << secondary_row << std::endl;
 		auto cur_state = _state_history->_old_states[top_row];
 		cur_state->run_cmd_to(secondary_row);
-		auto bb_action = menu->addAction("blackboard");
+		auto bb_action = menu->addAction("memory");
 		QObject::connect(bb_action, &QAction::triggered, this, [cur_state, this]()
 		{
-			return show_blackboard(cur_state);
+			return show_memory(cur_state);
 		});
 		auto front_action = menu->addAction("fronts");
 		QObject::connect(front_action, &QAction::triggered, this, [cur_state, this]()
@@ -302,15 +302,15 @@ void log_dialog::show_fronts(const std::shared_ptr<tree_state>& cur_state)
 	}
 
 }
-void log_dialog::show_blackboard(const std::shared_ptr<tree_state>& cur_state)
+void log_dialog::show_memory(const std::shared_ptr<tree_state>& cur_state)
 {
 
-	std::vector<std::string> cur_blackboard_str;
+	std::vector<std::string> cur_memory_str;
 	for (const auto & [bb_key, bb_value] : cur_state->vars())
 	{
-		cur_blackboard_str.push_back(bb_key + ": " + bb_value.dump());
+		cur_memory_str.push_back(bb_key + ": " + bb_value.dump());
 	}
-	auto cur_search_dialog = new search_select_dialog(cur_blackboard_str, this);
+	auto cur_search_dialog = new search_select_dialog(cur_memory_str, this);
 	auto result = cur_search_dialog->run();
 }
 void log_dialog::timer_poll()

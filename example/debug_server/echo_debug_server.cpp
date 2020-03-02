@@ -18,7 +18,7 @@ int main()
 	{
 		cout << "receive data from " << entity_id << " with cmds " << encode(_cmds).dump() << endl;
 	};
-	auto _http_server = std::make_shared< http_server<debug_connection, debug_cmd_receiver>>(_cur_ctx, "echo debug server", 8090, 1, &_cur_echo);
+	auto _http_server = std::make_shared< http_server<debug_connection, debug_cmd_receiver>>(_cur_ctx, "echo debug server", 8090,  &_cur_echo);
 	_http_server->run();
 	_cur_ctx.run();
 }

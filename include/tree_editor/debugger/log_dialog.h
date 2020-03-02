@@ -31,7 +31,7 @@ namespace spiritsaway::tree_editor
 		void on_view_double_clicked(QModelIndex cur_idx);
 		void on_view_context_menu(const QPoint& pos);
 		void show_fronts(const std::shared_ptr<tree_state>& cur_state);
-		void show_blackboard(const std::shared_ptr<tree_state>& cur_state);
+		void show_memory(const std::shared_ptr<tree_state>& cur_state);
 		void timer_poll();
 		void highlight_fronts(const std::shared_ptr<tree_state>& cur_state);
 		void debug_stop();

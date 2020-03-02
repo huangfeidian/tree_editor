@@ -26,6 +26,9 @@ debugger_main_window::debugger_main_window(QWidget* parent)
 	{
 		add_cmds(entity_id, _cmds);
 	};
+	_asio_poll_timer = new QTimer(this);
+	_asio_poll_timer->start(500);
+	connect(_asio_poll_timer, SIGNAL(timeout()), this, SLOT(asio_poll()));
 }
 
 void debugger_main_window::init_widgets()
@@ -209,7 +212,7 @@ void debugger_main_window::action_http_handler()
 			QString::fromStdString(notify_info));
 		return;
 	}
-	_http_server = std::make_shared<http_server<debug_connection, debug_cmd_receiver>>(_asio_context, "tree_debugger", result, 1, &_reciever);
+	_http_server = std::make_shared<http_server<debug_connection, debug_cmd_receiver>>(_asio_context, "tree_debugger", result, &_reciever);
 	_http_server->run();
 	return;
 }
@@ -241,7 +244,7 @@ void debugger_main_window::save_debug_file()
 		result["ts"] = std::string(buffer);
 		result["debug_cmds"] = serialize::encode(_total_cmds);
 		std::string file_name = "debug_cmds_" + _debug_entity_id + "_" + std::string(buffer) + ".json";
-		std::ofstream output_stream(data_folder / file_name);
+		std::ofstream output_stream(history_folder / file_name);
 		output_stream << json(result).dump(4) << std::endl;
 		output_stream.close();
 
@@ -268,4 +271,8 @@ void debugger_main_window::action_close_all_handler()
 	_debug_source = debug_source::no_debug;
 
 	
+}
+void debugger_main_window::asio_poll()
+{
+	_asio_context.poll();
 }

@@ -41,6 +41,8 @@ namespace spiritsaway::tree_editor
 		debug_source _debug_source = debug_source::no_debug;
 		std::shared_ptr<http_server<debug_connection, debug_cmd_receiver>> _http_server;
 		asio::io_context _asio_context;
+		QTimer* _asio_poll_timer;
+		std::filesystem::path history_folder;
 	public:
 		std::deque<node_trace_cmd> _tree_cmds;
 		std::vector<node_trace_cmd> _total_cmds;
@@ -61,6 +63,7 @@ namespace spiritsaway::tree_editor
 		void action_http_handler();
 		void action_open_handler();
 		void action_close_all_handler() override;
+		void asio_poll();
 
 	};
 }
