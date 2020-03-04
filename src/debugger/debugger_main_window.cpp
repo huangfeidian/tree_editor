@@ -128,9 +128,7 @@ bool debugger_main_window::focus_on(const std::string& tree_name, std::uint32_t 
 }
 bool debugger_main_window::node_has_breakpoint(const std::string& tree_name, std::uint32_t node_idx)
 {
-	auto cur_file_path = data_folder / tree_name;
-	std::string cur_file_path_str = cur_file_path.string();
-	tree_instance* cur_ins = ensure_file_open(cur_file_path_str);
+	tree_instance* cur_ins = ensure_file_open(tree_name);
 	if (!cur_ins)
 	{
 		return true;
