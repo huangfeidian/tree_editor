@@ -76,10 +76,14 @@ namespace spiritsaway::tree_editor
 					error_desc = "cmds format not match";
 					break;
 				}
+				
 				_cmd_queue(entity_id, cmds);
 				break;
 			}
-
+			if (error_desc.size())
+			{
+				std::cout << "http get data fail: " << error_desc << std::endl;
+			}
 			http_response_header _cur_response;
 			_cur_response.set_version("1.0");
 			if (!error_desc.empty())

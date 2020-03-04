@@ -422,6 +422,10 @@ namespace spiritsaway::tree_editor
 				}
 				default:
 				{
+					if (_old_states.size() == 0)
+					{
+						return true;
+					}
 					_latest_state->run_one_cmd(_cmd);
 					_old_states.back()->_cmds.push_back(_cmd);
 					return false;
