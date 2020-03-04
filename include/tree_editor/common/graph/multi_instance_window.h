@@ -17,6 +17,7 @@
 #include <http_server/http_server.h>
 #include <filesystem>
 #include <variant>
+#include <tree_editor/common/graph/basic_node_desc.h>
 
 using json = nlohmann::json;
 
@@ -24,7 +25,7 @@ namespace spiritsaway::tree_editor
 {
 	class tree_instance;
 	class basic_node;
-	struct basic_node_desc;
+
 }
 namespace bt_editor = spiritsaway::tree_editor;
 
@@ -64,7 +65,9 @@ namespace spiritsaway::tree_editor
 		virtual void action_goto_handler();
 		virtual void action_open_handler();
 	protected:
-		virtual std::variant<std::string, tree_instance*> action_open_impl(const std::string& file_name);
-
+		virtual std::variant<std::string, tree_instance*> action_open_impl(const std::string& file_path);
+		
+		virtual std::variant<std::string, std::vector<basic_node_desc>> load_desc_from_file_path(const std::string& file_path);
+		virtual std::variant<std::string, basic_node*> construct_root_from_node_descs(const std::vector<basic_node_desc>& nodes_info);
 	};
 }

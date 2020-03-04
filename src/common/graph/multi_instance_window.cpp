@@ -249,7 +249,23 @@ basic_node* multi_instance_window::create_node_from_desc(const basic_node_desc& 
 std::variant<std::string, tree_instance*> multi_instance_window::action_open_impl(const std::string& file_name)
 {
 	
-	std::ifstream tree_file(file_name);
+	auto nodes_info_var = load_desc_from_file_path(file_name);
+	if (std::holds_alternative<std::string>(nodes_info_var))
+	{
+		return std::get<std::string>(nodes_info_var);
+	}
+	auto root_var = construct_root_from_node_descs(std::get<std::vector<basic_node_desc>>(nodes_info_var));
+	if (std::holds_alternative<std::string>(root_var))
+	{
+		return std::get<std::string>(root_var);
+	}
+	tree_instance* cur_tree_instance = new tree_instance(file_name, std::get<basic_node*>(root_var), this);
+	return cur_tree_instance;
+}
+
+std::variant<std::string, std::vector<basic_node_desc>> multi_instance_window::load_desc_from_file_path(const std::string& file_path)
+{
+	std::ifstream tree_file(file_path);
 	std::string tree_file_content((std::istreambuf_iterator<char>(tree_file)), std::istreambuf_iterator<char>());
 	if (!json::accept(tree_file_content))
 	{
@@ -274,6 +290,10 @@ std::variant<std::string, tree_instance*> multi_instance_window::action_open_imp
 		return "tree content cant decode node content";
 
 	}
+	return nodes_info;
+}
+std::variant<std::string, basic_node*> multi_instance_window::construct_root_from_node_descs(const std::vector<basic_node_desc>& nodes_info)
+{
 	basic_node_desc cur_root_desc;
 	bool found_root = false;
 	std::unordered_map<std::uint32_t, basic_node_desc> node_relation;
@@ -340,7 +360,10 @@ std::variant<std::string, tree_instance*> multi_instance_window::action_open_imp
 			cur_root = cur_node;
 		}
 	}
+	if (!cur_root)
+	{
+		return "cant construct root";
+	}
+	return cur_root;
 
-	tree_instance* cur_tree_instance = new tree_instance(file_name, cur_root, this);
-	return cur_tree_instance;
 }
