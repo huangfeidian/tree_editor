@@ -1,7 +1,7 @@
 # tree_editor
 一个使用Qt5编写的树形结构编辑器，典型使用样例是用来作为公式编辑器和行为树编辑器。
 
-
+![基本界面](https://github.com/huangfeidian/tree_editor/blob/master/screenshot/math_example.png?raw=true)
 
 ## 依赖
 
