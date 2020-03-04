@@ -1,7 +1,11 @@
 # tree_editor
 一个使用Qt5编写的树形结构编辑器，典型使用样例是用来作为公式编辑器和行为树编辑器。
 
-![基本界面](https://github.com/huangfeidian/tree_editor/blob/master/screenshot/math_example.png?raw=true)
+![树结构界面](https://github.com/huangfeidian/tree_editor/blob/master/screenshot/math_example.png?raw=true)
+
+
+
+![编辑窗口](https://github.com/huangfeidian/tree_editor/blob/master/screenshot/edit_dialog.png?raw=true)
 
 ## 依赖
 
@@ -15,3 +19,8 @@
 
 当前项目使用cmake来管理，要求c++版本为17，编译与安装的流程与普通cmake库没啥不同，因此不做介绍。
 
+## 使用样例
+
+最简单的使用样例参见example目录下的math_tree，用来编辑数学公式。
+
+更复杂的使用样例是作为行为树编辑器和调试器，这个在我自己的行为树repo里面使用了，链接 https://github.com/huangfeidian/behavior_tree
