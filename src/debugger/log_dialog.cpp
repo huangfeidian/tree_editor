@@ -49,16 +49,15 @@ log_dialog::log_dialog(std::deque<node_trace_cmd > & in_cmd_queue, debugger_main
 	setLayout(vboxLayout);
 	std::vector<std::pair<QString, Qt::ItemFlags>> headers;
 	headers.emplace_back("Timestamp", Qt::ItemFlag::NoItemFlags);
-	headers.emplace_back("Position", Qt::ItemFlag::NoItemFlags);
+	headers.emplace_back("Pos", Qt::ItemFlag::NoItemFlags);
 	headers.emplace_back("Cmd", Qt::ItemFlag::NoItemFlags);
 	headers.emplace_back("Param", Qt::ItemFlag::NoItemFlags);
-
-	headers.emplace_back("comment", Qt::ItemFlag::ItemIsEditable);
 
 	_model = new log_tree_model(headers);
 
 	_view->setModel(_model);
-	_view->setColumnWidth(0, 150);
+	_view->setColumnWidth(0, 120);
+	_view->setColumnWidth(1, 30);
 	_view->setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(_view, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(on_view_context_menu(const QPoint &)));
 	connect(_view, &QTreeView::doubleClicked, this, &log_dialog::on_view_double_clicked);
