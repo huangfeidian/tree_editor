@@ -86,7 +86,10 @@ bool log_dialog::push_cmd(node_trace_cmd one_cmd)
 	}
 	else
 	{
-		_model->appendRow(row_data, _model->index(_state_history->_old_states.size() - 1, 0));
+		if (_state_history->_old_states.size())
+		{
+			_model->appendRow(row_data, _model->index(_state_history->_old_states.size() - 1, 0));
+		}
 	}
 	return true;
 }
@@ -315,7 +318,7 @@ void log_dialog::show_memory(const std::shared_ptr<tree_state>& cur_state)
 }
 void log_dialog::timer_poll()
 {
-	std::size_t max_per_round = 5;
+	std::size_t max_per_round = 100;
 	while (max_per_round && !cmd_queue.empty())
 	{
 		auto cur_cmd = cmd_queue.front();
@@ -323,7 +326,7 @@ void log_dialog::timer_poll()
 		push_cmd(cur_cmd);
 		max_per_round--;
 	}
-	std::cout << "timer poll with max_per_round " << 5 - max_per_round<< std::endl;
+	// std::cout << "timer poll with max_per_round " << 5 - max_per_round<< std::endl;
 
 }
 void log_dialog::increate_row_idx()
