@@ -49,16 +49,15 @@ log_dialog::log_dialog(std::deque<node_trace_cmd > & in_cmd_queue, debugger_main
 	setLayout(vboxLayout);
 	std::vector<std::pair<QString, Qt::ItemFlags>> headers;
 	headers.emplace_back("Timestamp", Qt::ItemFlag::NoItemFlags);
-	headers.emplace_back("Position", Qt::ItemFlag::NoItemFlags);
+	headers.emplace_back("Pos", Qt::ItemFlag::NoItemFlags);
 	headers.emplace_back("Cmd", Qt::ItemFlag::NoItemFlags);
 	headers.emplace_back("Param", Qt::ItemFlag::NoItemFlags);
-
-	headers.emplace_back("comment", Qt::ItemFlag::ItemIsEditable);
 
 	_model = new log_tree_model(headers);
 
 	_view->setModel(_model);
-	_view->setColumnWidth(0, 150);
+	_view->setColumnWidth(0, 120);
+	_view->setColumnWidth(1, 30);
 	_view->setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(_view, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(on_view_context_menu(const QPoint &)));
 	connect(_view, &QTreeView::doubleClicked, this, &log_dialog::on_view_double_clicked);
@@ -86,7 +85,10 @@ bool log_dialog::push_cmd(node_trace_cmd one_cmd)
 	}
 	else
 	{
-		_model->appendRow(row_data, _model->index(_state_history->_old_states.size() - 1, 0));
+		if (_state_history->_old_states.size())
+		{
+			_model->appendRow(row_data, _model->index(_state_history->_old_states.size() - 1, 0));
+		}
 	}
 	return true;
 }
@@ -315,7 +317,7 @@ void log_dialog::show_memory(const std::shared_ptr<tree_state>& cur_state)
 }
 void log_dialog::timer_poll()
 {
-	std::size_t max_per_round = 5;
+	std::size_t max_per_round = 100;
 	while (max_per_round && !cmd_queue.empty())
 	{
 		auto cur_cmd = cmd_queue.front();
@@ -323,7 +325,7 @@ void log_dialog::timer_poll()
 		push_cmd(cur_cmd);
 		max_per_round--;
 	}
-	std::cout << "timer poll with max_per_round " << 5 - max_per_round<< std::endl;
+	// std::cout << "timer poll with max_per_round " << 5 - max_per_round<< std::endl;
 
 }
 void log_dialog::increate_row_idx()

@@ -33,7 +33,6 @@ namespace spiritsaway::tree_editor
 		{
 			std::string error_desc = "";
 			std::string entity_id = "";
-
 			std::vector<node_trace_cmd> cmds;
 			while (true)
 			{
