@@ -48,6 +48,22 @@ namespace spiritsaway::tree_editor
 				return cur_iter->second;
 			}
 		}
+		std::string get_choice_comment(const std::string& _choice_type, const std::string& _choice_value) const
+		{
+			auto cur_iter = _choices.find(_choice_type);
+			if (cur_iter == _choices.end())
+			{
+				return _choice_value;
+			}
+			for (std::uint32_t i = 0; i < cur_iter->second.first->size(); i++)
+			{
+				if ((*cur_iter->second.first)[i] == _choice_value)
+				{
+					return (*cur_iter->second.second)[i];
+				}
+			}
+			return _choice_value;
+		}
 		void load_from_json(const json& _config)
 		{
 			if (!_config.is_object())
