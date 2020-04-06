@@ -189,7 +189,7 @@ void editor_main_window::action_save_as_handler()
 		return;
 	}
 	auto fileName = QFileDialog::getOpenFileName(this,
-		tr("Save File"), QString::fromStdString("./"), tr("Tree File (*.json)"));
+		tr("Save File"), QString::fromStdString(data_folder.string()), tr("Tree File (*.json)"));
 	if (!fileName.size())
 	{
 		return;
