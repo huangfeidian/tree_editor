@@ -14,7 +14,7 @@
 #include <filesystem>
 #include <QCloseEvent>
 #include <tree_editor/common/logger.h>
-#include <http_server/http_server.h>
+
 #include <filesystem>
 #include <variant>
 #include <tree_editor/common/graph/basic_node_desc.h>

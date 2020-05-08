@@ -1,10 +1,14 @@
 ﻿#pragma once
 
+
+
+
 #include <deque>
 
 #include <tree_editor/common/graph/multi_instance_window.h>
 
 #include "debug_server.h"
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class debugger_main_window; }

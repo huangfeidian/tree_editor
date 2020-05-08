@@ -8,7 +8,7 @@
 #include <qpainterpath.h>
 #include <qimage.h>
 
-
+#include <algorithm>
 //#include <QGraphicsSvgItem>
 //#include <QSvgGenerator>
 //#include <QSvgRenderer>

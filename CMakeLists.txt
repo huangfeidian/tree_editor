@@ -53,13 +53,13 @@ add_library(tree_editor ${UI_FILES}  ${SHARE_SRC_FILES} ${SHARE_HEADER_FILES} ${
 
 
 target_link_libraries(tree_editor PRIVATE Qt5::Widgets)
-target_link_libraries(tree_editor PUBLIC nlohmann_json::nlohmann_json any_container)
+target_link_libraries(tree_editor PUBLIC nlohmann_json::nlohmann_json any_container spdlog::spdlog)
 
 add_library(tree_debugger ${UI_FILES}  ${SHARE_SRC_FILES} ${SHARE_HEADER_FILES} ${DEBUGER_SRC_FILES} ${DEBUGER_HEADER_FILES})
 find_package(http_server CONFIG REQUIRED)
 INCLUDE_DIRECTORIES(${http_server_include_dirs})
 target_link_libraries(tree_debugger PRIVATE Qt5::Widgets)
-target_link_libraries(tree_debugger PUBLIC nlohmann_json::nlohmann_json any_container)
+target_link_libraries(tree_debugger PUBLIC nlohmann_json::nlohmann_json any_container spdlog::spdlog)
 target_link_libraries(tree_debugger PUBLIC http_server)
 
 add_executable(path_require ${PROJECT_SOURCE_DIR}/include/tree_editor/common/dialogs/path_config_dialog.h ${PROJECT_SOURCE_DIR}/src/common/dialogs/path_config_dialog.cpp ${PROJECT_SOURCE_DIR}/test/path_require/path_require_test.cpp)
@@ -69,10 +69,10 @@ file(GLOB MATH_HEADER_FILES "${PROJECT_SOURCE_DIR}/example/math_tree/*.h")
 file(GLOB MATH_SRC_FILES "${PROJECT_SOURCE_DIR}/example/math_tree/*.cpp")
 add_executable(math_tree ${UI_FILES}  ${SHARE_SRC_FILES} ${SHARE_HEADER_FILES} ${EDITOR_SRC_FILES} ${EDITOR_HEADER_FILES} ${MATH_HEADER_FILES} ${MATH_SRC_FILES})
 target_link_libraries(math_tree PRIVATE Qt5::Widgets)
-target_link_libraries(math_tree PUBLIC nlohmann_json::nlohmann_json any_container)
+target_link_libraries(math_tree PUBLIC nlohmann_json::nlohmann_json any_container spdlog::spdlog)
 
 add_executable(debug_server ${PROJECT_SOURCE_DIR}/example/debug_server/echo_debug_server.cpp)
-target_link_libraries(debug_server PUBLIC nlohmann_json::nlohmann_json any_container http_server)
+target_link_libraries(debug_server PUBLIC nlohmann_json::nlohmann_json any_container http_server spdlog::spdlog)
 
 foreach(p LIB INCLUDE)
 	set(var CMAKE_INSTALL_${p}DIR)
