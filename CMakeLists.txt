@@ -63,7 +63,7 @@ target_link_libraries(tree_debugger PUBLIC nlohmann_json::nlohmann_json any_cont
 target_link_libraries(tree_debugger PUBLIC http_server)
 
 add_executable(path_require ${PROJECT_SOURCE_DIR}/include/tree_editor/common/dialogs/path_config_dialog.h ${PROJECT_SOURCE_DIR}/src/common/dialogs/path_config_dialog.cpp ${PROJECT_SOURCE_DIR}/test/path_require/path_require_test.cpp)
-target_link_libraries(path_require PUBLIC nlohmann_json::nlohmann_json PRIVATE Qt5::Widgets)
+target_link_libraries(path_require PUBLIC nlohmann_json::nlohmann_json PRIVATE Qt5::Widgets spdlog::spdlog)
 
 file(GLOB MATH_HEADER_FILES "${PROJECT_SOURCE_DIR}/example/math_tree/*.h")
 file(GLOB MATH_SRC_FILES "${PROJECT_SOURCE_DIR}/example/math_tree/*.cpp")
