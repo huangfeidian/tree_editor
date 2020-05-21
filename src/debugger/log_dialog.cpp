@@ -63,7 +63,7 @@ log_dialog::log_dialog(std::deque<node_trace_cmd > & in_cmd_queue, debugger_main
 	connect(_view, &QTreeView::doubleClicked, this, &log_dialog::on_view_double_clicked);
 	vboxLayout->setSizeConstraint(QLayout::SetMaximumSize);
 	_poll_timer = new QTimer(this);
-	_poll_timer->start(1000);
+	_poll_timer->start(200);
 	connect(_poll_timer, &QTimer::timeout, this, &log_dialog::timer_poll);
 
 }
@@ -326,6 +326,10 @@ void log_dialog::timer_poll()
 		max_per_round--;
 	}
 	// std::cout << "timer poll with max_per_round " << 5 - max_per_round<< std::endl;
+	if (_cur_debug_mode == debug_mode::run_through)
+	{
+		debug_run_through(_main_window->debug_max_step);
+	}
 
 }
 void log_dialog::increate_row_idx()
@@ -420,6 +424,7 @@ void log_dialog::debug_run_through(std::size_t max_step)
 		auto cur_cmd_opt = run_once_impl();
 		if (!cur_cmd_opt)
 		{
+			_logger->debug("debug run through break 1");
 			break;
 		}
 		increate_row_idx();
@@ -432,6 +437,8 @@ void log_dialog::debug_run_through(std::size_t max_step)
 			// breakpoint
 			if (_main_window->node_has_breakpoint(_cur_running_state->tree_indexes[cur_tree_idx], cur_node_idx))
 			{
+				_logger->debug("debug run through break 1");
+
 				break;
 			}
 		}
@@ -441,6 +448,12 @@ void log_dialog::debug_run_through(std::size_t max_step)
 			cur_tree_idx = cur_cmd.tree_idx;
 			cur_node_idx = cur_cmd.node_idx;
 		}
+	}
+	if (cur_step == 1)
+	{
+		_logger->debug("debug run through break 3");
+
+		return;
 	}
 	auto tree_name = _cur_running_state->tree_indexes[cur_tree_idx];
 	
@@ -453,28 +466,7 @@ void log_dialog::debug_run_through(std::size_t max_step)
 }
 void log_dialog::highlight_fronts(const std::shared_ptr<tree_state>& cur_state)
 {
-	//for (auto one_pre_front : _pre_fronts)
-	//{
-	//	if (std::find(cur_state.cur_fronts.begin(), cur_state.cur_fronts.end(), one_pre_front) == cur_state.cur_fronts.end())
-	//	{
-	//		_main_window->highlight_node(_state_history->_latest_state->tree_indexes[one_pre_front.first], one_pre_front.second, color_from_uint(0));
-	//	}
-	//}
-	//for (auto one_now_front : cur_state.cur_fronts)
-	//{
-	//	if (std::find(_pre_fronts.begin(), _pre_fronts.end(), one_now_front) == _pre_fronts.end())
-	//	{
-	//		_main_window->highlight_node(_state_history->_latest_state->tree_indexes[one_now_front.first], one_now_front.second, Qt::magenta);
-	//	}
-	//}
-	for (auto one_pre_front : _pre_fronts)
-	{
-		if (cur_state->_current_nodes.find(one_pre_front) != cur_state->_current_nodes.end())
-		{
-			_main_window->highlight_node(_state_history->_latest_state->tree_indexes[one_pre_front.first], one_pre_front.second, color_from_uint(0));
-		}
-		
-	}
+	_main_window->clear_hightlight();
 	for (auto one_now_front : cur_state->_current_nodes)
 	{
 		_main_window->highlight_node(_state_history->_latest_state->tree_indexes[one_now_front.first], one_now_front.second, Qt::magenta);

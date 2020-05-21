@@ -46,6 +46,8 @@ namespace spiritsaway::tree_editor
 	public:
 		std::deque<node_trace_cmd> _tree_cmds;
 		std::vector<node_trace_cmd> _total_cmds;
+		std::uint32_t debug_max_step = 1000;
+
 		std::string _debug_entity_id;
 		void save_debug_file();
 		void reset_debug_entity(const std::string& new_entity_id);
@@ -54,6 +56,7 @@ namespace spiritsaway::tree_editor
 		void highlight_node(const std::string& tree_name, std::uint32_t node_idx, QColor color);
 		virtual tree_instance* ensure_file_open(const std::string& tree_name);
 		virtual void add_cmds(const std::string& entity_id, const std::vector<node_trace_cmd>& _temp_cmds);
+		void clear_hightlight();
 	private:
 		void set_debug_mode(debug_mode _new_mode);
 		debug_cmd_receiver _reciever;
