@@ -1,5 +1,4 @@
-﻿#include <fmt/format.h>
-#include <qlineedit.h>
+﻿#include <qlineedit.h>
 #include <qcheckbox.h>
 #include <qpushbutton.h>
 #include <qcombobox.h>
@@ -18,6 +17,7 @@
 #include <tree_editor/common/dialogs/editable_item.h>
 #include <tree_editor/common/dialogs/search_select_dialog.h>
 #include <magic_enum.hpp>
+#include <spdlog/fmt/fmt.h>
 using namespace spiritsaway::tree_editor;
 
 

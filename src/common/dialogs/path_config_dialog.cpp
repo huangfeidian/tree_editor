@@ -6,9 +6,9 @@
 #include <qpushbutton.h>
 #include <nlohmann/json.hpp>
 #include <fstream>
+#include <spdlog/fmt/fmt.h>
 
 #include <tree_editor/common/dialogs/path_config_dialog.h>
-#include <fmt/format.h>
 
 using namespace std;
 using namespace spiritsaway::tree_editor;

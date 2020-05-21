@@ -38,6 +38,7 @@ namespace spiritsaway::tree_editor
 		void debug_run_through(std::uint32_t max_step);
 		void debug_run_once();
 	public:
+		std::uint32_t poll_gap = 200;
 		void reset();
 	private:
 		std::deque<node_trace_cmd>& cmd_queue;

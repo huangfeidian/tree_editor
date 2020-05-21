@@ -63,7 +63,7 @@ log_dialog::log_dialog(std::deque<node_trace_cmd > & in_cmd_queue, debugger_main
 	connect(_view, &QTreeView::doubleClicked, this, &log_dialog::on_view_double_clicked);
 	vboxLayout->setSizeConstraint(QLayout::SetMaximumSize);
 	_poll_timer = new QTimer(this);
-	_poll_timer->start(200);
+	_poll_timer->start(poll_gap);
 	connect(_poll_timer, &QTimer::timeout, this, &log_dialog::timer_poll);
 
 }
