@@ -7,7 +7,7 @@
 #include <optional>
 
 #include <tree_editor/common/debug_cmd.h>
-#include <spdlog/spdlog.h>
+#include <spdlog/logger.h>
 
 #include <deque>
 #include "log_item.h"
