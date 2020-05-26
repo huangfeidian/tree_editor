@@ -411,7 +411,7 @@ void log_dialog::debug_run_once()
 	auto cur_model_idx = get_model_idx(_cur_top_row, _cur_secondary_row, 0);
 	_view->setCurrentIndex(cur_model_idx);
 }
-void log_dialog::debug_run_through(std::size_t max_step)
+void log_dialog::debug_run_through(std::uint32_t max_step)
 {
 	_logger->info("debug_run_through {}", max_step);
 	_cur_debug_mode = debug_mode::run_through;
