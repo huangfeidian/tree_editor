@@ -18,6 +18,7 @@
 #include <tree_editor/common/dialogs/editable_item.h>
 #include <tree_editor/common/dialogs/search_select_dialog.h>
 #include <magic_enum.hpp>
+#include <spdlog/fmt/fmt.h>
 using namespace spiritsaway::tree_editor;
 
 

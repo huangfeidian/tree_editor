@@ -122,7 +122,7 @@ bool debugger_main_window::focus_on(const std::string& tree_name, std::uint32_t 
 	{
 		return false;
 	}
-
+	cur_ins->clear_temp_color();
 	cur_ins->focus_on(node_idx);
 	return true;
 }
@@ -160,7 +160,13 @@ void debugger_main_window::highlight_node(const std::string& tree_name, std::uin
 	}
 
 }
-
+void debugger_main_window::clear_hightlight()
+{
+	for (auto one_ins : _instances)
+	{
+		one_ins->clear_temp_color();
+	}
+}
 void debugger_main_window::set_debug_mode(debug_mode _new_mode)
 {
 	switch (_new_mode)
@@ -169,7 +175,7 @@ void debugger_main_window::set_debug_mode(debug_mode _new_mode)
 		_log_viewer->debug_stop();
 		break;
 	case debug_mode::run_through:
-		_log_viewer->debug_run_through();
+		_log_viewer->debug_run_through(debug_max_step);
 		break;
 	case debug_mode::run_once:
 		_log_viewer->debug_run_once();

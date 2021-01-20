@@ -35,9 +35,10 @@ namespace spiritsaway::tree_editor
 		void timer_poll();
 		void highlight_fronts(const std::shared_ptr<tree_state>& cur_state);
 		void debug_stop();
-		void debug_run_through(std::size_t max_step = 1000);
+		void debug_run_through(std::uint32_t max_step);
 		void debug_run_once();
 	public:
+		std::uint32_t poll_gap = 200;
 		void reset();
 	private:
 		std::deque<node_trace_cmd>& cmd_queue;

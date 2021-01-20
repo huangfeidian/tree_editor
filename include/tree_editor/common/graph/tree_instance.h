@@ -39,6 +39,7 @@ namespace spiritsaway::tree_editor
 		std::filesystem::path file_name;
 		std::uint32_t node_seq_idx = 1; // next node seq to use
 		std::string agent_type;
+		std::unordered_map<std::uint32_t, QColor> temp_node_colors;
 		bool modified = true;
 		void set_dirty();
 		void set_modfied(bool flag);
@@ -47,6 +48,7 @@ namespace spiritsaway::tree_editor
 		void focus_on(const node_graph* cur_node);
 		void focus_on(basic_node* cur_node);
 		void clear_temp_color(std::uint32_t node_idx);
+		void clear_temp_color();
 		void set_temp_color(std::uint32_t node_idx, QColor color);
 		void update_title();
 	public:

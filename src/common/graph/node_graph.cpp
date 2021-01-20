@@ -8,7 +8,7 @@
 #include <tree_editor/common/dialogs/editable_dialog.h>
 #include <tree_editor/common/dialogs/line_dialog.h>
 
-
+#include <iostream>
 
 using namespace spiritsaway::tree_editor;
 
@@ -19,8 +19,8 @@ node_graph::node_graph(basic_node* _in_model, tree_instance* _in_manager,
 	_model(_in_model),
 	_manager(_in_manager)
 {
-	_outline = new box_outline(color_from_uint(_in_model->temp_color ? _in_model->temp_color:_in_model->color ));
-	//std::cout << "node graph fill with color " << _in_model->color << std::endl;
+	_outline = new box_outline(color_from_uint(_in_model->color ));
+	//std::cout<<"node graph "<< _model->_idx<<" fill with color " << _in_model->color << std::endl;
 	setFlag(QGraphicsItem::ItemIsSelectable, true);
 	setFlag(QGraphicsItem::ItemIsFocusable, true);
 	QGraphicsSimpleTextItem* _text = new QGraphicsSimpleTextItem(
@@ -309,7 +309,7 @@ void node_graph::set_color()
 
 void node_graph::set_outline_color(QColor _color)
 {
-	_manager->_logger->info("node {} highlight color {}", _model->_idx, color_to_uint(_color));
+	//_manager->_logger->info("node {} highlight color {}", _model->_idx, color_to_uint(_color));
 	_outline->_color = _color;
 	_outline->update();
 }
