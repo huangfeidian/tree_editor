@@ -1,4 +1,4 @@
-﻿#include <fmt/format.h>
+﻿#include <spdlog/fmt/fmt.h>
 #include <qlineedit.h>
 #include <qcheckbox.h>
 #include <qpushbutton.h>

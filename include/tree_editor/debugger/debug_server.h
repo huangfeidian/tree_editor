@@ -1,52 +1,45 @@
 ﻿#pragma once
 #include <deque>
 
-#include <http_server/http_server.h>
-#include <http_server/http_connection.h>
+#include <http_server/http_server.hpp>
 #include <any_container/decode.h>
 #include <tree_editor/common/debug_cmd.h>
 #include <queue>
+#include <iostream>
 
 namespace spiritsaway::tree_editor
 {
 	
-	using namespace spiritsaway::http;
-	class debug_connection : public spiritsaway::http::http_connection
+	using namespace spiritsaway::http_server;
+	class debug_handler
 	{
-		
-	private:
 		debug_cmd_receiver _cmd_queue;
+
 	public:
-		static std::shared_ptr<debug_connection> create(asio::ip::tcp::socket&& _in_client_socket, std::shared_ptr<spdlog::logger> logger, std::uint32_t in_connection_idx, std::uint32_t _in_timeout, std::string log_pre, void* _in_cmd_queue)
-
-		{
-			return std::make_shared<debug_connection>(std::move(_in_client_socket), logger, in_connection_idx, _in_timeout, log_pre, *reinterpret_cast<debug_cmd_receiver*>(_in_cmd_queue));
-		}
-		debug_connection(asio::ip::tcp::socket&& in_client_socket, std::shared_ptr<spdlog::logger> logger, std::uint32_t in_connection_idx, std::uint32_t _in_timeout, std::string log_pre, debug_cmd_receiver& _in_cmd_queue)
-			: http_connection(std::move(in_client_socket), logger, in_connection_idx, 1, "debug_connection")
-			, _cmd_queue(_in_cmd_queue)
+		debug_handler(const debug_cmd_receiver& in_cmd_queue)
+			: _cmd_queue(in_cmd_queue)
 		{
 
 		}
 
-		void on_client_data_body_read(const http_request_header& _header, std::string_view _content)
+		void operator()(const request& req, reply_handler rep_handler)
 		{
 			std::string error_desc = "";
 			std::string entity_id = "";
 			std::vector<node_trace_cmd> cmds;
 			while (true)
 			{
-				if (_header.method() != "POST" || _header.path_and_query() != "/post/ai_debug/")
+				if (req.method != "POST" || req.uri != "/post/ai_debug/")
 				{
 					error_desc = "the method should be POST and  post path should be /post/ai_debug";
 					break;
 				}
-				if (!json::accept(_content))
+				if (!json::accept(req.body))
 				{
 					error_desc = "the content should be json str";
 					break;
 				}
-				json post_data = json::parse(_content);
+				json post_data = json::parse(req.body);
 				auto entity_id_iter = post_data.find("entity_id");
 				if (entity_id_iter == post_data.end())
 				{
@@ -75,31 +68,27 @@ namespace spiritsaway::tree_editor
 					error_desc = "cmds format not match";
 					break;
 				}
-				
+
 				_cmd_queue(entity_id, cmds);
 				break;
 			}
+			reply cur_reply;
+			cur_reply.headers.push_back(header{ "Content-Type", "text/html" });
+			cur_reply.headers.push_back(header{ "Server", "Http Server" });
+
 			if (error_desc.size())
 			{
 				std::cout << "http get data fail: " << error_desc << std::endl;
-			}
-			http_response_header _cur_response;
-			_cur_response.set_version("1.0");
-			if (!error_desc.empty())
-			{
-				_cur_response.status_code(reply_status::bad_request);
-				_cur_response.status_description(error_desc);
+				cur_reply.content = error_desc;
+				cur_reply.status = reply::status_type::bad_request;
 			}
 			else
 			{
-				_cur_response.status_code(reply_status::ok);
-				_cur_response.status_description("OK");
+				cur_reply.status = reply::status_type::ok;
+				cur_reply.content = "ok";
 			}
-			_cur_response.add_header_value("Content-Type", "text/html");
-			_cur_response.add_header_value("Server", "Http Server");
-			auto request_str = _header.encode_to_data();
-
-			response_str = _cur_response.encode_to_data(request_str);
+			rep_handler(cur_reply);
+			return;
 		}
 	};
 }

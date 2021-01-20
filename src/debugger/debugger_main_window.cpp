@@ -211,7 +211,7 @@ void debugger_main_window::action_http_handler()
 		return;
 	}
 	_debug_source = debug_source::http_debug;
-	_http_server = std::make_shared<http_server<debug_connection, debug_cmd_receiver>>(_asio_context, "tree_debugger", result, &_reciever);
+	_http_server = std::make_shared<http_server::server>(_asio_context, "0.0.0.0", std::to_string(result), debug_handler(_reciever));
 	_http_server->run();
 	return;
 }

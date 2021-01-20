@@ -8,7 +8,7 @@
 #include <fstream>
 
 #include <tree_editor/common/dialogs/path_config_dialog.h>
-#include <fmt/format.h>
+#include <spdlog/fmt/fmt.h>
 
 using namespace std;
 using namespace spiritsaway::tree_editor;
