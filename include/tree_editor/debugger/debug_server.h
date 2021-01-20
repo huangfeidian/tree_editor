@@ -22,8 +22,14 @@ namespace spiritsaway::tree_editor
 
 		}
 
-		void operator()(const request& req, reply_handler rep_handler)
+		void operator()(std::weak_ptr<request> weak_req, reply_handler rep_handler)
 		{
+			auto req_ptr = weak_req.lock();
+			if(!req_ptr)
+			{
+				return;
+			}
+			auto& req = *req_ptr;
 			std::string error_desc = "";
 			std::string entity_id = "";
 			std::vector<node_trace_cmd> cmds;
