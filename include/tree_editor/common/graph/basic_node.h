@@ -15,16 +15,16 @@ namespace spiritsaway::tree_editor
 	class basic_node
 	{
 	public:
-		const std::string _type;
-		std::string comment;
+		const std::string m_type;
+		std::string m_comment;
 
-		std::uint32_t _idx;
-		basic_node* _parent;
-		std::vector<basic_node*> _children;
-		bool _is_collapsed = false;
-		bool _has_break_point = false;
-		std::uint32_t color;//rgba
-		std::shared_ptr<struct_items> _show_widget;
+		std::uint32_t m_idx;
+		basic_node* m_parent;
+		std::vector<basic_node*> m_children;
+		bool m_is_collapsed = false;
+		bool m_has_break_point = false;
+		std::uint32_t m_color;//rgba
+		std::shared_ptr<struct_items> m_show_widget;
 		void add_child(basic_node* in_child);
 		void remove_child(basic_node* in_child);
 		void move_child(basic_node* in_child, bool is_up);
@@ -80,7 +80,7 @@ namespace spiritsaway::tree_editor
 	class config_node : public basic_node
 	{
 	protected:
-		const node_config _config;
+		const node_config m_config;
 	public:
 		config_node(const node_config& _config, config_node* _parent, std::uint32_t _idx);
 		std::size_t max_child_num() const;

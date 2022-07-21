@@ -18,17 +18,17 @@ std::string basic_node::check_valid() const
 {
 	auto max_size = max_child_num();
 	auto min_size = min_child_num();
-	if (_children.size() > max_size || _children.size() < min_size)
+	if (m_children.size() > max_size || m_children.size() < min_size)
 	{
-		std::string info = "basic_node " + std::to_string(_idx) + " has " + std::to_string(_children.size()) + " children while min " + std::to_string(min_size) + " max " + std::to_string(max_size);
+		std::string info = "basic_node " + std::to_string(m_idx) + " has " + std::to_string(m_children.size()) + " children while min " + std::to_string(min_size) + " max " + std::to_string(max_size);
 		return info;
 	}
-	auto editable_valid = _show_widget->input_valid();
+	auto editable_valid = m_show_widget->input_valid();
 	if (!editable_valid.empty())
 	{
-		return "basic_node " + std::to_string(_idx) + " editable invalid for " + editable_valid;
+		return "basic_node " + std::to_string(m_idx) + " editable invalid for " + editable_valid;
 	}
-	for (const auto i : _children)
+	for (const auto i : m_children)
 	{
 		auto temp_result = i->check_valid();
 		if (temp_result.size())
@@ -45,9 +45,9 @@ bool basic_node::check_item_edit_refresh(std::shared_ptr<editable_item> change_i
 }
 void basic_node::add_child(basic_node* in_child)
 {
-	_children.push_back(in_child);
-	in_child->_parent = this;
-	auto pre_childrens = in_child->_children;
+	m_children.push_back(in_child);
+	in_child->m_parent = this;
+	auto pre_childrens = in_child->m_children;
 	std::deque<basic_node*> all_basic_nodes;
 	all_basic_nodes.push_back(in_child);
 	while (!all_basic_nodes.empty())
@@ -55,7 +55,7 @@ void basic_node::add_child(basic_node* in_child)
 		auto cur_basic_node = all_basic_nodes.front();
 		all_basic_nodes.pop_front();
 		cur_basic_node->refresh_editable_items();
-		for (auto one_child : cur_basic_node->_children)
+		for (auto one_child : cur_basic_node->m_children)
 		{
 			all_basic_nodes.push_back(one_child);
 		}
@@ -70,9 +70,9 @@ bool basic_node::can_collapse() const
 
 std::optional<std::uint32_t> basic_node::index_of_child(const basic_node* in_child) const
 {
-	for (std::size_t i = 0; i < _children.size(); i++)
+	for (std::size_t i = 0; i < m_children.size(); i++)
 	{
-		if (_children[i] == in_child)
+		if (m_children[i] == in_child)
 		{
 			return i;
 		}
@@ -87,8 +87,8 @@ void basic_node::remove_child(basic_node* in_child)
 	{
 		return;
 	}
-	_children.erase(_children.begin() + idx_opt.value());
-	in_child->_parent = nullptr;
+	m_children.erase(m_children.begin() + idx_opt.value());
+	in_child->m_parent = nullptr;
 
 }
 void basic_node::move_child(basic_node* in_child, bool is_up)
@@ -105,15 +105,15 @@ void basic_node::move_child(basic_node* in_child, bool is_up)
 		{
 			return;
 		}
-		std::swap(_children[idx], _children[idx - 1]);
+		std::swap(m_children[idx], m_children[idx - 1]);
 	}
 	else
 	{
-		if (idx == _children.size() - 1)
+		if (idx == m_children.size() - 1)
 		{
 			return;
 		}
-		std::swap(_children[idx], _children[idx + 1]);
+		std::swap(m_children[idx], m_children[idx + 1]);
 	}
 
 
@@ -122,9 +122,9 @@ void basic_node::move_child(basic_node* in_child, bool is_up)
 const basic_node* basic_node::get_root() const
 {
 	auto p = this;
-	while (p->_parent)
+	while (p->m_parent)
 	{
-		p = p->_parent;
+		p = p->m_parent;
 	}
 	return p;
 }
@@ -134,11 +134,11 @@ void basic_node::refresh_editable_items()
 }
 
 basic_node::basic_node(std::string _in_type, basic_node* _in_parent, std::uint32_t _in_idx) :
-	_type(_in_type),
-	_parent(_in_parent),
-	_idx(_in_idx),
-	_show_widget(std::make_shared<struct_items>("")),
-	color(0xffffffff)
+	m_type(_in_type),
+	m_parent(_in_parent),
+	m_idx(_in_idx),
+	m_show_widget(std::make_shared<struct_items>("")),
+	m_color(0xffffffff)
 
 {
 
@@ -146,28 +146,28 @@ basic_node::basic_node(std::string _in_type, basic_node* _in_parent, std::uint32
 json basic_node::to_json() const
 {
 	basic_node_desc cur_desc;
-	cur_desc.idx = _idx;
-	cur_desc.comment = comment;
-	cur_desc.color = color;
-	cur_desc.type = _type;
-	for (const auto i : _children)
+	cur_desc.idx = m_idx;
+	cur_desc.comment = m_comment;
+	cur_desc.color = m_color;
+	cur_desc.type = m_type;
+	for (const auto i : m_children)
 	{
-		cur_desc.children.push_back(i->_idx);
+		cur_desc.children.push_back(i->m_idx);
 	}
-	if (_parent)
+	if (m_parent)
 	{
-		cur_desc.parent = _parent->_idx;
+		cur_desc.parent = m_parent->m_idx;
 	}
 
 	return cur_desc.encode();
 }
 std::string basic_node::display_text() const
 {
-	return std::to_string(_idx) + ":" + _type + ":" +  comment;
+	return std::to_string(m_idx) + ":" + m_type + ":" +  m_comment;
 }
 void basic_node::destroy()
 {
-	for (auto one_child : _children)
+	for (auto one_child : m_children)
 	{
 		one_child->destroy();
 	}
@@ -177,12 +177,12 @@ void basic_node::destroy()
 basic_node* basic_node::clone_recursive(basic_node* _in_parent) const
 {
 	auto new_node = clone_self(_in_parent);
-	for (auto one_child : _children)
+	for (auto one_child : m_children)
 	{
 		auto temp_child = one_child->clone_recursive(new_node);
-		temp_child->comment = one_child->comment;
-		temp_child->color = one_child->color;
-		temp_child->_is_collapsed = one_child->_is_collapsed;
+		temp_child->m_comment = one_child->m_comment;
+		temp_child->m_color = one_child->m_color;
+		temp_child->m_is_collapsed = one_child->m_is_collapsed;
 		new_node->add_child(temp_child);
 	}
 	return new_node;
@@ -190,7 +190,7 @@ basic_node* basic_node::clone_recursive(basic_node* _in_parent) const
 
 bool basic_node::check_edit()
 {
-	if (!_show_widget)
+	if (!m_show_widget)
 	{
 		return false;
 	}
@@ -297,12 +297,12 @@ std::optional<node_config> node_config_repo::get_config(const std::string& key) 
 
 config_node::config_node(const node_config& _in_config, config_node* _in_parent, std::uint32_t _in_idx)
 	:basic_node(_in_config.node_type_name, _in_parent, _in_idx)
-	, _config(_in_config)
+	, m_config(_in_config)
 {
-	if (_config.editable_info)
+	if (m_config.editable_info)
 	{
-		auto cur_child = _config.editable_info->clone();
-		_show_widget->_children.push_back(cur_child);
+		auto cur_child = m_config.editable_info->clone();
+		m_show_widget->m_children.push_back(cur_child);
 	}
 	
 }
@@ -319,11 +319,11 @@ basic_node* config_node::create_node(std::string _type, basic_node* _parent, std
 }
 std::size_t config_node::max_child_num() const
 {
-	return _config.max_child_num;
+	return m_config.max_child_num;
 }
 std::size_t config_node::min_child_num() const
 {
-	return _config.min_child_num;
+	return m_config.min_child_num;
 }
 config_node::~config_node()
 {
@@ -331,7 +331,7 @@ config_node::~config_node()
 }
 basic_node* config_node::clone_self(basic_node* _parent)const
 {
-	auto new_node = new config_node(_config, reinterpret_cast<config_node*>(_parent), 0);
-	new_node->_show_widget = std::dynamic_pointer_cast<struct_items>(_show_widget->clone());
+	auto new_node = new config_node(m_config, reinterpret_cast<config_node*>(_parent), 0);
+	new_node->m_show_widget = std::dynamic_pointer_cast<struct_items>(m_show_widget->clone());
 	return new_node;
 }

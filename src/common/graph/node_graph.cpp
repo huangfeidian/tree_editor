@@ -16,15 +16,15 @@ using namespace spiritsaway::tree_editor;
 
 node_graph::node_graph(basic_node* _in_model, tree_instance* _in_manager,
 	QColor _text_color) :
-	_model(_in_model),
-	_manager(_in_manager)
+	m_model(_in_model),
+	m_manager(_in_manager)
 {
-	_outline = new box_outline(color_from_uint(_in_model->color ));
+	m_outline = new box_outline(color_from_uint(_in_model->m_color ));
 	//std::cout<<"node graph "<< _model->_idx<<" fill with color " << _in_model->color << std::endl;
 	setFlag(QGraphicsItem::ItemIsSelectable, true);
 	setFlag(QGraphicsItem::ItemIsFocusable, true);
 	QGraphicsSimpleTextItem* _text = new QGraphicsSimpleTextItem(
-		QString::fromStdString(_model->display_text()));
+		QString::fromStdString(m_model->display_text()));
 	_text->setBrush(_text_color);
 	auto text_bound = _text->boundingRect();
 
@@ -39,17 +39,17 @@ node_graph::node_graph(basic_node* _in_model, tree_instance* _in_manager,
 
 	auto empty_space = QPointF(node_unit, node_unit);
 	auto new_r = empty_space + total_radius;
-	cur_bounding = QRectF(-new_r, new_r);
-	_outline->_rect = cur_bounding;
-	addToGroup(_outline);
+	m_cur_bounding = QRectF(-new_r, new_r);
+	m_outline->m_rect = m_cur_bounding;
+	addToGroup(m_outline);
 	_text->setZValue(1.0);
-	_outline->setZValue(0.0);
+	m_outline->setZValue(0.0);
 }
 QVariant node_graph::itemChange(GraphicsItemChange change, const QVariant &value)
 {
 	if (change == QGraphicsItem::ItemSelectedChange)
 	{
-		_manager->select_changed(this, value.toInt());
+		m_manager->select_changed(this, value.toInt());
 		return value;
 	}
 	else
@@ -61,7 +61,7 @@ QVariant node_graph::itemChange(GraphicsItemChange change, const QVariant &value
 
 QRectF node_graph::boundingRect() const
 {
-	return cur_bounding;
+	return m_cur_bounding;
 }
 tree_layouter::tree_layouter(node_graph* in_root) :
 	root(in_root)
@@ -100,29 +100,29 @@ void tree_layouter::cacl_node_xy(node_graph* cur_node, int level)
 	{
 		node_widths[level] = cur_w;
 	}
-	cur_node->layout_x = level;
-	if (cur_node->_children.empty())
+	cur_node->m_layout_x = level;
+	if (cur_node->m_children.empty())
 	{
-		cur_node->layout_y = get_y();
+		cur_node->m_layout_y = get_y();
 		return;
 	}
-	for (auto one_node : cur_node->_children)
+	for (auto one_node : cur_node->m_children)
 	{
 		cacl_node_xy(one_node, level + 1);
 	}
-	cur_node->layout_y = (cur_node->_children[0]->layout_y + cur_node->_children.back()->layout_y) * 0.5;
+	cur_node->m_layout_y = (cur_node->m_children[0]->m_layout_y + cur_node->m_children.back()->m_layout_y) * 0.5;
 
 }
 void tree_layouter::set_node_pos(node_graph* cur_node)
 {
 
-	double x = total_widths[cur_node->layout_x] + cur_node->layout_x * 4 * node_unit;
-	double y = node_unit * 5 * (cur_node->layout_y - root->layout_y);
+	double x = total_widths[cur_node->m_layout_x] + cur_node->m_layout_x * 4 * node_unit;
+	double y = node_unit * 5 * (cur_node->m_layout_y - root->m_layout_y);
 	//cur_node->_manager->parent->_logger->debug("node {} layout x:{} y:{}, pos x:{} y:{}",
 	//cur_node->_model->_idx, cur_node->layout_x, cur_node->layout_y, x, y);
 	auto cur_p = QPointF(x, y);
 	cur_node->set_left_pos(cur_p);
-	for (auto one_node : cur_node->_children)
+	for (auto one_node : cur_node->m_children)
 	{
 		set_node_pos(one_node);
 	}
@@ -157,8 +157,8 @@ void node_graph::draw_cross(QColor color)
 	auto left_down = pos() + QPointF(width * -0.5, height * -0.5);
 	auto right_upper = pos() + QPointF(width * 0.5, height * 0.5);
 	auto right_down = pos() + QPointF(width * 0.5, height * -0.5);
-	auto l1 = _manager->_scene->addLine(QLineF(left_upper, right_down), p);
-	auto l2 = _manager->_scene->addLine(QLineF(left_down, right_upper), p);
+	auto l1 = m_manager->m_scene->addLine(QLineF(left_upper, right_down), p);
+	auto l2 = m_manager->m_scene->addLine(QLineF(left_down, right_upper), p);
 	l1->setZValue(1.0);
 	l2->setZValue(1.0);
 }
@@ -178,7 +178,7 @@ void node_graph::draw_right_triangle(QColor color)
 	auto point_3 = QPointF(0, height);
 	polygon << point_1 << point_2 << point_3<<point_1;
 	polygon.translate(begin_pos);
-	auto cur_p = _manager->_scene->addPolygon(polygon, p, b);
+	auto cur_p = m_manager->m_scene->addPolygon(polygon, p, b);
 	cur_p->setZValue(1.0);
 
 }
@@ -194,7 +194,7 @@ void node_graph::draw_left_circle(QColor color)
 	QPointF new_r(height, height);
 	auto cur_rect = QRectF(-new_r, new_r);
 	cur_rect.translate(begin_pos);
-	auto cur_p = _manager->_scene->addEllipse(cur_rect, p, b);
+	auto cur_p = m_manager->m_scene->addEllipse(cur_rect, p, b);
 	cur_p->setZValue(1.0);
 }
 void node_graph::draw_bound(QColor color)
@@ -205,30 +205,30 @@ void node_graph::draw_bound(QColor color)
 	auto width = get_width();
 	auto height = boundingRect().height();
 	auto left_down = pos() + QPointF(width * -0.5, height * -0.5);
-	_manager->_scene->addRect(left_down.x(), left_down.y(), width, height, p, b);
-	_manager->_logger->info("bound is {}, {}, {}, {}", left_down.x(), left_down.y(), width, height);
+	m_manager->m_scene->addRect(left_down.x(), left_down.y(), width, height, p, b);
+	m_manager->m_logger->info("bound is {}, {}, {}, {}", left_down.x(), left_down.y(), width, height);
 }
 void node_graph::set_collapsed()
 {
-	_model->_is_collapsed = true;
-	_manager->refresh();
+	m_model->m_is_collapsed = true;
+	m_manager->refresh();
 }
 void node_graph::set_un_collapsed()
 {
-	_model->_is_collapsed = false;
-	_manager->refresh();
+	m_model->m_is_collapsed = false;
+	m_manager->refresh();
 }
 void node_graph::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
 	//_manager->_logger->debug("node {} mouseDoubleClickEventn with show_info {}", _model->_idx, _model->_show_widget->to_json().dump());
-	if (!_model->_show_widget->empty())
+	if (!m_model->m_show_widget->empty())
 	{
 		set_editable();
 		return;
 	}
-	if (_model->can_collapse())
+	if (m_model->can_collapse())
 	{
-		if (_model->_is_collapsed)
+		if (m_model->m_is_collapsed)
 		{
 			set_un_collapsed();
 		}
@@ -247,9 +247,9 @@ void node_graph::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	auto action_color = node_menu->addAction("Color");
 	QObject::connect(action_color, &QAction::triggered, this, &node_graph::set_color);
 	// action_color->triggered.connect(set_color);
-	if (_model->can_collapse())
+	if (m_model->can_collapse())
 	{
-		if (_model->_is_collapsed)
+		if (m_model->m_is_collapsed)
 		{
 			auto action_expand = node_menu->addAction("Expand");
 			QObject::connect(action_expand, &QAction::triggered, this, &node_graph::set_un_collapsed);
@@ -265,14 +265,14 @@ void node_graph::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	auto action_comment = node_menu->addAction("Comment");
 	QObject::connect(action_comment, &QAction::triggered, this, &node_graph::set_comment);
 
-	if (!_model->_show_widget->empty())
+	if (!m_model->m_show_widget->empty())
 	{
 		auto action_content = node_menu->addAction("Content");
 		QObject::connect(action_content, &QAction::triggered, this, &node_graph::set_editable);
 	}
-	if (_manager->parent->is_read_only())
+	if (m_manager->parent->is_read_only())
 	{
-		if (!(_model->_has_break_point))
+		if (!(m_model->m_has_break_point))
 		{
 			auto action_add_breakpoint = node_menu->addAction("add_breakpoint");
 			QObject::connect(action_add_breakpoint, &QAction::triggered, this, &node_graph::add_breakpoint);
@@ -287,12 +287,12 @@ void node_graph::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	}
 	//node_menu->move(_manager->_view->mapFromScene(center_pos().x() + event->pos().x(), center_pos().y() + event->pos().y()));
 
-	node_menu->move(_manager->_view->mapFromScene(center_pos().x() - event->pos().x(), center_pos().y() - event->pos().y()));
+	node_menu->move(m_manager->m_view->mapFromScene(center_pos().x() - event->pos().x(), center_pos().y() - event->pos().y()));
 	node_menu->show();
 }
 void node_graph::set_color()
 {
-	QColor cur_color = QColorDialog::getColor(Qt::white, _manager->window);
+	QColor cur_color = QColorDialog::getColor(Qt::white, m_manager->window);
 	if (cur_color.isValid())
 	{
 		
@@ -300,49 +300,49 @@ void node_graph::set_color()
 		//std::cout << fmt::format("color_item set with color ({}, {}, {}, {} final {})",
 		//	 r,g,b,a, final_value) << std::endl;
 
-		_model->color = final_value;
-		_outline->_color = color_from_uint(final_value);
-		_outline->update();
-		_manager->set_dirty();
+		m_model->m_color = final_value;
+		m_outline->m_color = color_from_uint(final_value);
+		m_outline->update();
+		m_manager->set_dirty();
 	}
 }
 
 void node_graph::set_outline_color(QColor _color)
 {
 	//_manager->_logger->info("node {} highlight color {}", _model->_idx, color_to_uint(_color));
-	_outline->_color = _color;
-	_outline->update();
+	m_outline->m_color = _color;
+	m_outline->update();
 }
 void node_graph::set_comment()
 {
-	auto comment_dialog = new line_dialog("change comment", _model->comment, _manager->window);
+	auto comment_dialog = new line_dialog("change comment", m_model->m_comment, m_manager->window);
 	auto new_comment = comment_dialog->run();
-	_model->comment = new_comment;
-	_manager->set_dirty();
-	_manager->refresh();
+	m_model->m_comment = new_comment;
+	m_manager->set_dirty();
+	m_manager->refresh();
 }
 void node_graph::set_editable()
 {
-	if (_manager->parent->is_read_only())
+	if (m_manager->parent->is_read_only())
 	{
-		auto cur_info_dialog = new info_dialog(_manager->window, _model);
+		auto cur_info_dialog = new info_dialog(m_manager->window, m_model);
 		cur_info_dialog->run();
 		return;
 	}
-	auto edit_dialog = new editable_dialog(_manager->window, _model);
+	auto edit_dialog = new editable_dialog(m_manager->window, m_model);
 	edit_dialog->run();
-	_manager->set_dirty();
-	_manager->refresh();
+	m_manager->set_dirty();
+	m_manager->refresh();
 	return;
 }
 void node_graph::add_breakpoint()
 {
-	_model->_has_break_point = true;
-	_manager->refresh();
+	m_model->m_has_break_point = true;
+	m_manager->refresh();
 }
 
 void node_graph::remove_breakpoint()
 {
-	_model->_has_break_point = false;
-	_manager->refresh();
+	m_model->m_has_break_point = false;
+	m_manager->refresh();
 }

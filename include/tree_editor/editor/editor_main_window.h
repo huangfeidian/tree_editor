@@ -48,6 +48,7 @@ public slots:
 	void action_export_handler();
 	void action_export_all_handler();
 	void action_save_as_handler();
+	void action_tree_type_handler();
 	// node actions
 	void action_insert_handler();
 	void action_del_handler();
@@ -59,5 +60,6 @@ public slots:
 	void action_reindex_handler();
 protected:
 	virtual std::string action_new_impl();
+	virtual std::string action_tree_type_impl();
 };
 

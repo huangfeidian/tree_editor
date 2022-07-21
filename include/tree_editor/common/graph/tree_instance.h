@@ -17,8 +17,8 @@ namespace spiritsaway::tree_editor
 		void wheelEvent(QWheelEvent* e);
 		void keyPressEvent(QKeyEvent* e);
 		void closeEvent(QCloseEvent* e);
-		QTransform cur_trans;
-		tree_instance* _graph_mgr;
+		QTransform m_cur_trans;
+		tree_instance* m_graph_mgr;
 	};
 	
 	class tree_instance
@@ -26,19 +26,19 @@ namespace spiritsaway::tree_editor
 	public:
 		static const std::uint32_t area_width = 1080;
 		static const std::uint32_t area_height = 1920;
-		tree_instance(const std::string& in_file_path, basic_node* in_root, multi_instance_window* _in_main);
-		QGraphicsScene* _scene;
-		tree_view* _view;
-		basic_node* _root;
-		node_graph* _graph_root = nullptr;
+		tree_instance(const std::string& in_file_path, const std::string& in_tree_type, basic_node* in_root, multi_instance_window* _in_main);
+		QGraphicsScene* m_scene;
+		tree_view* m_view;
+		basic_node* m_root;
+		node_graph* m_graph_root = nullptr;
 		basic_node* selected_node = nullptr;
-		std::shared_ptr<spdlog::logger> _logger;
+		std::shared_ptr<spdlog::logger> m_logger;
 		multi_instance_window* parent;
 		QMdiSubWindow* window;
 		std::filesystem::path file_path;
 		std::filesystem::path file_name;
 		std::uint32_t node_seq_idx = 1; // next node seq to use
-		std::string agent_type;
+		std::string m_tree_type;
 		std::unordered_map<std::uint32_t, QColor> temp_node_colors;
 		bool modified = true;
 		void set_dirty();
@@ -53,8 +53,8 @@ namespace spiritsaway::tree_editor
 		void update_title();
 	public:
 		void display_tree();
-		void _display_links_impl(node_graph* cur_node);
-		node_graph* _build_tree_impl(basic_node* cur_node);
+		void display_links_impl(node_graph* cur_node);
+		node_graph* m_build_tree_impl(basic_node* cur_node);
 		node_graph* find_graph_by_node(node_graph* cur_graph, basic_node* cur_node) const;
 		node_graph* find_graph_by_idx(node_graph* cur_graph, std::uint32_t idx) const;
 		basic_node* find_node_by_idx(std::uint32_t idx);

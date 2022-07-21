@@ -49,13 +49,13 @@ namespace spiritsaway::tree_editor
 		void refresh();
 		std::variant<std::string, json::object_t> load_json_file(const std::string& file_path) const;
 	protected:
-		std::shared_ptr<spdlog::logger> _logger;
-		bt_editor::tree_instance* active_instance = nullptr;
-		std::vector<bt_editor::tree_instance*> _instances;
-		QMdiArea* cur_mdi;
+		std::shared_ptr<spdlog::logger> m_logger;
+		bt_editor::tree_instance* m_active_instance = nullptr;
+		std::vector<bt_editor::tree_instance*> m_instances;
+		QMdiArea* m_cur_mdi;
 		virtual bool load_config();
 		virtual basic_node* create_node_from_desc(const basic_node_desc& _desc, basic_node* parent);
-		std::filesystem::path data_folder;
+		std::filesystem::path m_data_folder;
 	public slots:
 		void sub_window_activated(QMdiSubWindow* cur_window);
 		void closeEvent(QCloseEvent* e);
@@ -67,7 +67,7 @@ namespace spiritsaway::tree_editor
 	protected:
 		virtual std::variant<std::string, tree_instance*> action_open_impl(const std::string& file_path);
 		
-		virtual std::variant<std::string, std::vector<basic_node_desc>> load_desc_from_file_path(const std::string& file_path);
+		virtual std::variant<std::string, std::vector<basic_node_desc>> load_desc_from_file_path(const json::object_t& tree_json_content);
 		virtual std::variant<std::string, basic_node*> construct_root_from_node_descs(const std::vector<basic_node_desc>& nodes_info);
 	};
 }

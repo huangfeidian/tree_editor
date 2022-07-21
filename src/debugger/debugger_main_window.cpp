@@ -34,14 +34,14 @@ debugger_main_window::debugger_main_window(QWidget* parent)
 void debugger_main_window::init_widgets()
 {
 	ui->setupUi(this);
-	cur_mdi = ui->mdiArea;
-	cur_mdi->setViewMode(QMdiArea::TabbedView);
-	cur_mdi->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-	cur_mdi->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-	cur_mdi->setTabsMovable(true);
-	cur_mdi->setTabsClosable(true);
-	cur_mdi->setTabShape(QTabWidget::Rounded);
-	connect(cur_mdi, SIGNAL(subWindowActivated(QMdiSubWindow *)), this, SLOT(sub_window_activated(QMdiSubWindow*)));
+	m_cur_mdi = ui->mdiArea;
+	m_cur_mdi->setViewMode(QMdiArea::TabbedView);
+	m_cur_mdi->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+	m_cur_mdi->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+	m_cur_mdi->setTabsMovable(true);
+	m_cur_mdi->setTabsClosable(true);
+	m_cur_mdi->setTabShape(QTabWidget::Rounded);
+	connect(m_cur_mdi, SIGNAL(subWindowActivated(QMdiSubWindow *)), this, SLOT(sub_window_activated(QMdiSubWindow*)));
 
 	QDockWidget *cur_docker_widget = new QDockWidget(tr("log_viewer"), this);
 	_log_viewer = new log_dialog(_tree_cmds, this);
@@ -90,14 +90,14 @@ void debugger_main_window::init_actions()
 tree_instance* debugger_main_window::ensure_file_open(const std::string& tree_name)
 {
 
-	auto cur_file_path = data_folder / tree_name;
+	auto cur_file_path = m_data_folder / tree_name;
 	std::string cur_file_path_str = cur_file_path.string();
 	auto opt_ins_idx = already_open(cur_file_path_str);
 	tree_instance* cur_ins;
 	if (opt_ins_idx)
 	{
-		cur_ins = _instances[opt_ins_idx.value()];
-		cur_mdi->setActiveSubWindow(cur_ins->window);
+		cur_ins = m_instances[opt_ins_idx.value()];
+		m_cur_mdi->setActiveSubWindow(cur_ins->window);
 		return cur_ins;
 	}
 	else
@@ -140,13 +140,13 @@ bool debugger_main_window::node_has_breakpoint(const std::string& tree_name, std
 	}
 	else
 	{
-		return cur_node->_has_break_point;
+		return cur_node->m_has_break_point;
 	}
 	
 }
 void debugger_main_window::highlight_node(const std::string& tree_name, std::uint32_t node_idx, QColor color)
 {
-	std::filesystem::path cur_file_path = data_folder / tree_name;
+	std::filesystem::path cur_file_path = m_data_folder / tree_name;
 	std::string cur_file_path_str = cur_file_path.string();
 	auto opt_ins_idx = already_open(cur_file_path_str);
 	tree_instance* cur_ins = ensure_file_open(cur_file_path_str);
@@ -162,7 +162,7 @@ void debugger_main_window::highlight_node(const std::string& tree_name, std::uin
 }
 void debugger_main_window::clear_hightlight()
 {
-	for (auto one_ins : _instances)
+	for (auto one_ins : m_instances)
 	{
 		one_ins->clear_temp_color();
 	}
@@ -209,7 +209,7 @@ void debugger_main_window::action_http_handler()
 	auto cur_port_dialog = new uint_dialog("http server port", 8090, this);
 	auto result = cur_port_dialog->run();
 	
-	if (result <= 1024 or result >= 20000)
+	if (result <= 1024 || result >= 20000)
 	{
 		auto notify_info = "port number shoude between 1024 and 20000";
 		QMessageBox::about(this, QString("Error"),

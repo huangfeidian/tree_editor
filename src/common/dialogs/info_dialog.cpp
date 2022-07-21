@@ -12,7 +12,7 @@ info_dialog::info_dialog(QWidget* _in_parent, basic_node* _in_edit_node)
 	, edit_node(_in_edit_node)
 {
 	QHBoxLayout *cur_layout = new QHBoxLayout;
-	cur_layout->addWidget(edit_node->_show_widget->to_dialog());
+	cur_layout->addWidget(edit_node->m_show_widget->to_dialog());
 	setLayout(cur_layout);
 }
 

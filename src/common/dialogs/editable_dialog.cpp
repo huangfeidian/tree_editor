@@ -7,7 +7,7 @@ using namespace spiritsaway::tree_editor;
 
 editable_dialog::editable_dialog(QWidget* _in_parent, basic_node* _in_edit_node)
 	:QDialog(_in_parent)
-	, edit_node(_in_edit_node)
+	, m_edit_node(_in_edit_node)
 {
 	refresh();
 	
@@ -35,7 +35,7 @@ void editable_dialog::remove_pre_layout(QLayout* pre_layout)
 			// 所以先暂时放在widgets_to_delete里 延迟销毁
 			temp_widget->hide();
 			pre_layout->removeItem(item);
-			widgets_to_delete.push_back(temp_widget);
+			m_widgets_to_delete.push_back(temp_widget);
 			//delete temp_widget;
 		}
 		auto temp_layout = item->layout();
@@ -55,13 +55,13 @@ void editable_dialog::refresh()
 {
 	//std::cout << "editable_dialog begin refresh" << std::endl;
 	auto pre_layout = layout();
-	if (!widgets_to_delete.empty())
+	if (!m_widgets_to_delete.empty())
 	{
-		for (auto one_widget : widgets_to_delete)
+		for (auto one_widget : m_widgets_to_delete)
 		{
 			delete one_widget;
 		}
-		widgets_to_delete.clear();
+		m_widgets_to_delete.clear();
 	}
 	remove_pre_layout(pre_layout);
 	if (pre_layout)
@@ -69,7 +69,7 @@ void editable_dialog::refresh()
 		delete pre_layout;
 	}
 	QHBoxLayout *cur_layout = new QHBoxLayout;
-	cur_layout->addWidget(edit_node->_show_widget->to_editor([&](std::shared_ptr<editable_item> change_item)
+	cur_layout->addWidget(m_edit_node->m_show_widget->to_editor([&](std::shared_ptr<editable_item> change_item)
 	{
 		check_edit(change_item);
 		return;
@@ -80,14 +80,14 @@ void editable_dialog::refresh()
 }
 void editable_dialog::check_edit(std::shared_ptr<editable_item> change_item)
 {
-	if (edit_node->check_item_edit_refresh(change_item))
+	if (m_edit_node->check_item_edit_refresh(change_item))
 	{
 		refresh();
 	}
 }
 void editable_dialog::closeEvent(QCloseEvent* event)
 {
-	auto notify_info = edit_node->check_valid();
+	auto notify_info = m_edit_node->check_valid();
 	if (!notify_info.empty())
 	{
 		QMessageBox::about(this, QString("Error"),
@@ -97,13 +97,13 @@ void editable_dialog::closeEvent(QCloseEvent* event)
 	}
 	else
 	{
-		if (!widgets_to_delete.empty())
+		if (!m_widgets_to_delete.empty())
 		{
-			for (auto one_widget : widgets_to_delete)
+			for (auto one_widget : m_widgets_to_delete)
 			{
 				delete one_widget;
 			}
-			widgets_to_delete.clear();
+			m_widgets_to_delete.clear();
 		}
 		event->accept();
 	}

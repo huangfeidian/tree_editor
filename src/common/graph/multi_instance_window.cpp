@@ -14,7 +14,7 @@ using namespace spiritsaway::tree_editor;
 
 multi_instance_window::multi_instance_window(QWidget* parent)
 	: QMainWindow(parent)
-	, _logger(spiritsaway::tree_editor::logger_mgr::instance().create_logger("btree"))
+	, m_logger(spiritsaway::tree_editor::logger_mgr::instance().create_logger("btree"))
 {
 
 }
@@ -53,48 +53,48 @@ std::variant<std::string, json::object_t> multi_instance_window::load_json_file(
 }
 void multi_instance_window::add_instance(tree_instance* _cur_instance)
 {
-	_logger->debug("main_window add_instance {}", _cur_instance->file_name.string());
-	_instances.push_back(_cur_instance);
-	cur_mdi->setActiveSubWindow(_cur_instance->window);
+	m_logger->debug("main_window add_instance {}", _cur_instance->file_name.string());
+	m_instances.push_back(_cur_instance);
+	m_cur_mdi->setActiveSubWindow(_cur_instance->window);
 	_cur_instance->display_tree();
 }
 void multi_instance_window::remove_instance(tree_instance* _cur_instance)
 {
-	_logger->debug("main_window remove_instance {}", _cur_instance->file_name.string());
+	m_logger->debug("main_window remove_instance {}", _cur_instance->file_name.string());
 	std::size_t i = 0;
-	for (; i < _instances.size(); i++)
+	for (; i < m_instances.size(); i++)
 	{
-		if (_instances[i] == _cur_instance)
+		if (m_instances[i] == _cur_instance)
 		{
 			break;
 		}
 	}
-	_cur_instance->_root->destroy();
-	_instances.erase(_instances.begin() + i);
-	if (_instances.empty())
+	_cur_instance->m_root->destroy();
+	m_instances.erase(m_instances.begin() + i);
+	if (m_instances.empty())
 	{
 		return;
 	}
-	if (i >= _instances.size())
+	if (i >= m_instances.size())
 	{
-		sub_window_activated(_instances.back()->window);
+		sub_window_activated(m_instances.back()->window);
 	}
 	else
 	{
-		sub_window_activated(_instances[i]->window);
+		sub_window_activated(m_instances[i]->window);
 	}
 }
 
 void multi_instance_window::sub_window_activated(QMdiSubWindow* cur_win)
 {
-	_logger->debug("main_window sub_window_activated");
-	auto pre_instance = active_instance;
+	m_logger->debug("main_window sub_window_activated");
+	auto pre_instance = m_active_instance;
 	if (cur_win && pre_instance && pre_instance->window == cur_win)
 	{
 		return;
 	}
 	tree_instance* next_instance = nullptr;
-	for (const auto one_ins : _instances)
+	for (const auto one_ins : m_instances)
 	{
 		if (one_ins->window == cur_win)
 		{
@@ -110,20 +110,20 @@ void multi_instance_window::sub_window_activated(QMdiSubWindow* cur_win)
 	{
 		next_instance->activate_handler();
 	}
-	active_instance = next_instance;
+	m_active_instance = next_instance;
 
 }
 
 std::shared_ptr<spdlog::logger> multi_instance_window::logger()
 {
-	return _logger;
+	return m_logger;
 }
 std::optional<std::size_t> multi_instance_window::already_open(const std::string& file_path) const
 {
-	for (std::size_t i = 0; i < _instances.size(); i++)
+	for (std::size_t i = 0; i < m_instances.size(); i++)
 	{
 		//_logger->info("cur instance path {} input_path {}", _instances[i]->file_name.string(), file_path);
-		if (_instances[i]->file_path == file_path)
+		if (m_instances[i]->file_path == file_path)
 		{
 			return i;
 		}
@@ -133,14 +133,14 @@ std::optional<std::size_t> multi_instance_window::already_open(const std::string
 }
 void multi_instance_window::refresh()
 {
-	if (active_instance)
+	if (m_active_instance)
 	{
-		active_instance->refresh();
+		m_active_instance->refresh();
 	}
 }
 QMdiSubWindow* multi_instance_window::add_sub_window(QGraphicsView* _view)
 {
-	return cur_mdi->addSubWindow(_view);
+	return m_cur_mdi->addSubWindow(_view);
 }
 void multi_instance_window::closeEvent(QCloseEvent* e)
 {
@@ -148,8 +148,8 @@ void multi_instance_window::closeEvent(QCloseEvent* e)
 }
 void multi_instance_window::action_close_handler()
 {
-	_logger->debug("main_window action_close_handler");
-	auto cur_ins = active_instance;
+	m_logger->debug("main_window action_close_handler");
+	auto cur_ins = m_active_instance;
 
 	if (!cur_ins)
 	{
@@ -161,8 +161,8 @@ void multi_instance_window::action_close_handler()
 }
 void multi_instance_window::action_close_all_handler()
 {
-	_logger->debug("main_window action_close_all_handler");
-	auto pre_instances = _instances;
+	m_logger->debug("main_window action_close_all_handler");
+	auto pre_instances = m_instances;
 	for (auto one_ins : pre_instances)
 	{
 		remove_instance(one_ins);
@@ -170,8 +170,8 @@ void multi_instance_window::action_close_all_handler()
 }
 void multi_instance_window::action_find_handler()
 {
-	_logger->debug("main_window action_find_handler");
-	auto cur_ins = active_instance;
+	m_logger->debug("main_window action_find_handler");
+	auto cur_ins = m_active_instance;
 
 	if (!cur_ins)
 	{
@@ -181,8 +181,8 @@ void multi_instance_window::action_find_handler()
 }
 void multi_instance_window::action_goto_handler()
 {
-	_logger->debug("main_window action_goto_handler");
-	auto cur_ins = active_instance;
+	m_logger->debug("main_window action_goto_handler");
+	auto cur_ins = m_active_instance;
 
 	if (!cur_ins)
 	{
@@ -199,7 +199,7 @@ void multi_instance_window::action_goto_handler()
 void multi_instance_window::action_open_handler()
 {
 	auto fileName = QFileDialog::getOpenFileName(this,
-		tr("Open Tree File"), QString::fromStdString(data_folder.string()), tr("Json File (*.json)"));
+		tr("Open Tree File"), QString::fromStdString(m_data_folder.string()), tr("Json File (*.json)"));
 	if (!fileName.size())
 	{
 		std::string error_info = "empty file name";
@@ -239,17 +239,22 @@ basic_node* multi_instance_window::create_node_from_desc(const basic_node_desc& 
 	{
 		parent->add_child(cur_node);
 	}
-	cur_node->color = cur_desc.color;
-	cur_node->_is_collapsed = cur_desc.is_collpased;
-	cur_node->comment = cur_desc.comment;
+	cur_node->m_color = cur_desc.color;
+	cur_node->m_is_collapsed = cur_desc.is_collpased;
+	cur_node->m_comment = cur_desc.comment;
 	cur_node->refresh_editable_items();
 	cur_node->set_extra(json(cur_desc.extra));
 	return cur_node;
 }
 std::variant<std::string, tree_instance*> multi_instance_window::action_open_impl(const std::string& file_name)
 {
-	
-	auto nodes_info_var = load_desc_from_file_path(file_name);
+	auto tree_content_var = load_json_file(file_name);
+	if (!std::holds_alternative<json::object_t>(tree_content_var))
+	{
+		return std::get<std::string>(tree_content_var);
+	}
+	auto cur_tree_content = std::get<json::object_t>(tree_content_var);
+	auto nodes_info_var = load_desc_from_file_path(cur_tree_content);
 	if (std::holds_alternative<std::string>(nodes_info_var))
 	{
 		return std::get<std::string>(nodes_info_var);
@@ -259,25 +264,22 @@ std::variant<std::string, tree_instance*> multi_instance_window::action_open_imp
 	{
 		return std::get<std::string>(root_var);
 	}
-	tree_instance* cur_tree_instance = new tree_instance(file_name, std::get<basic_node*>(root_var), this);
+	std::string cur_tree_type;
+	auto tree_type_iter = cur_tree_content.find("tree_type");
+	if (tree_type_iter != cur_tree_content.end())
+	{
+		if (tree_type_iter->second.is_string())
+		{
+			cur_tree_type = tree_type_iter->second.get<std::string>();
+		}
+	}
+	tree_instance* cur_tree_instance = new tree_instance(file_name, cur_tree_type, std::get<basic_node*>(root_var), this);
 	return cur_tree_instance;
 }
 
-std::variant<std::string, std::vector<basic_node_desc>> multi_instance_window::load_desc_from_file_path(const std::string& file_path)
+std::variant<std::string, std::vector<basic_node_desc>> multi_instance_window::load_desc_from_file_path(const json::object_t& tree_json_content)
 {
-	std::ifstream tree_file(file_path);
-	std::string tree_file_content((std::istreambuf_iterator<char>(tree_file)), std::istreambuf_iterator<char>());
-	if (!json::accept(tree_file_content))
-	{
-		return "tree file should be json";
-
-	}
-	auto tree_json_content = json::parse(tree_file_content);
-	if (!tree_json_content.is_object())
-	{
-		return "tree content should be json dict";
-
-	}
+	
 	auto node_info_iter = tree_json_content.find("nodes");
 	if (node_info_iter == tree_json_content.end())
 	{
@@ -285,7 +287,7 @@ std::variant<std::string, std::vector<basic_node_desc>> multi_instance_window::l
 
 	}
 	std::vector<basic_node_desc> nodes_info;
-	if (!spiritsaway::serialize::decode(*node_info_iter, nodes_info))
+	if (!spiritsaway::serialize::decode(node_info_iter->second, nodes_info))
 	{
 		return "tree content cant decode node content";
 

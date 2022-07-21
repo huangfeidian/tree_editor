@@ -29,10 +29,10 @@ namespace spiritsaway::tree_editor
 		void temp_confirm();
 
 	private:
-		std::string _text;
-		QLabel* _label;
-		QPushButton* _button;
-		QLineEdit* _line_edit;
+		std::string m_text;
+		QLabel* m_label;
+		QPushButton* m_button;
+		QLineEdit* m_line_edit;
 	};
 	class uint_dialog : public line_dialog
 	{

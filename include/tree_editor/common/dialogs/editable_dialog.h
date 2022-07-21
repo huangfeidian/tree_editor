@@ -25,7 +25,7 @@ namespace spiritsaway::tree_editor
 		void check_edit(std::shared_ptr<editable_item> change_item);
 	private:
 		void remove_pre_layout(QLayout* pre_layout);
-		basic_node* edit_node;
-		std::vector<QWidget*> widgets_to_delete;
+		basic_node* m_edit_node;
+		std::vector<QWidget*> m_widgets_to_delete;
 	};
 }

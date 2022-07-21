@@ -8,26 +8,26 @@ json math_node::to_json() const
 {
 	auto result = config_node::to_json();
 	json::object_t extra;
-	if (_type == "literal")
+	if (m_type == "literal")
 	{
-		extra["value"] = _show_widget->find("value")->to_json()["value"];
+		extra["value"] = m_show_widget->find("value")->to_json()["value"];
 	}
-	else if (_type == "reduce")
+	else if (m_type == "reduce")
 	{
-		extra["value"] = _show_widget->find("reduce_operator")->to_json()["value"];
+		extra["value"] = m_show_widget->find("reduce_operator")->to_json()["value"];
 	}
 	result["extra"] = extra;
 	return result;
 }
 std::string math_node::display_text() const
 {
-	if (_type == "literal")
+	if (m_type == "literal")
 	{
-		return std::to_string(_idx) + ":" + _type + ":" + std::to_string(_show_widget->find("value")->_value.get<double>());
+		return std::to_string(m_idx) + ":" + m_type + ":" + std::to_string(m_show_widget->find("value")->m_value.get<double>());
 	}
-	else if (_type == "reduce")
+	else if (m_type == "reduce")
 	{
-		return std::to_string(_idx) + ":" + _type + ":" + _show_widget->find("reduce_operator")->_value.get<std::string>();
+		return std::to_string(m_idx) + ":" + m_type + ":" + m_show_widget->find("reduce_operator")->m_value.get<std::string>();
 	}
 	else
 	{
@@ -37,8 +37,8 @@ std::string math_node::display_text() const
 }
 basic_node* math_node::clone_self(basic_node* _parent) const
 {
-	auto new_node = new math_node(_config, reinterpret_cast<math_node*>(_parent), 0);
-	new_node->_show_widget = std::dynamic_pointer_cast<struct_items>(_show_widget->clone());
+	auto new_node = new math_node(m_config, reinterpret_cast<math_node*>(_parent), 0);
+	new_node->m_show_widget = std::dynamic_pointer_cast<struct_items>(m_show_widget->clone());
 	return new_node;
 }
 math_node::math_node(const node_config& _config, math_node* _parent, std::uint32_t _idx)
@@ -62,26 +62,26 @@ bool math_node::set_extra(const json::object_t& data)
 	{
 		return false;
 	}
-	if (_type == "literal")
+	if (m_type == "literal")
 	{
 		if (!value_iter->second.is_number_float())
 		{
 			return false;
 		}
-		auto cur_widget = _show_widget->find("value");
+		auto cur_widget = m_show_widget->find("value");
 		if (!cur_widget)
 		{
 			return false;
 		}
 		return cur_widget->assign(value_iter->second);
 	}
-	else if (_type == "reduce")
+	else if (m_type == "reduce")
 	{
 		if (!value_iter->second.is_string())
 		{
 			return false;
 		}
-		auto cur_widget = _show_widget->find("value");
+		auto cur_widget = m_show_widget->find("value");
 		if (!cur_widget)
 		{
 			return false;

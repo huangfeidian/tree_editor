@@ -52,12 +52,12 @@ namespace spiritsaway::tree_editor
 		virtual QWidget* to_editor( modify_callback_func_t modify_callback) = 0;
 		// to a readonly widget
 		virtual QWidget* to_dialog() = 0;
-		std::string _name;
-		std::string _comment;
-		json _value;
-		const editable_item_type _type;
-		const bool _is_container;
-		editable_item* parent;
+		std::string m_name;
+		std::string m_comment;
+		json m_value;
+		const editable_item_type m_type;
+		const bool m_is_container;
+		editable_item* m_parent;
 		editable_item(editable_item_type _in_type, bool _in_is_container,
 			const std::string& _in_name);
 		static std::shared_ptr<editable_item> from_json(const json& data);
@@ -115,12 +115,12 @@ namespace spiritsaway::tree_editor
 		Q_OBJECT
 
 	public:
-		std::shared_ptr<multi_line> _editor;
-		std::string _editor_id;
+		std::shared_ptr<multi_line> m_editor;
+		std::string m_editor_id;
 		void focusOutEvent(QFocusEvent* e)
 		{
 			QPlainTextEdit::focusOutEvent(e);
-			_editor->_value = toPlainText().toStdString();
+			m_editor->m_value = toPlainText().toStdString();
 		}
 
 	};
@@ -206,9 +206,9 @@ namespace spiritsaway::tree_editor
 		QWidget* to_dialog();
 		json to_json() const;
 		static std::shared_ptr<choice_item> from_json(const json& data);
-		const std::vector<std::string> _choices;
-		const std::vector<std::string> _choice_text;
-		const std::string _choice_type;
+		const std::vector<std::string> m_choices;
+		const std::vector<std::string> m_choice_text;
+		const std::string m_choice_type;
 		std::shared_ptr<editable_item> clone() const;
 	};
 
@@ -219,8 +219,8 @@ namespace spiritsaway::tree_editor
 	public:
 		list_items(const std::string& _in_name, const json& _in_item_base);
 
-		std::vector<std::shared_ptr<editable_item>> _children;
-		json item_base;
+		std::vector<std::shared_ptr<editable_item>> m_children;
+		json m_item_base;
 		std::shared_ptr<editable_item> push();
 		void pop();
 		QWidget* to_editor( modify_callback_func_t modify_callback);
@@ -235,7 +235,7 @@ namespace spiritsaway::tree_editor
 		friend class editable_item;
 	public:
 		struct_items(const std::string& _in_name);
-		std::vector<std::shared_ptr<editable_item>> _children;
+		std::vector<std::shared_ptr<editable_item>> m_children;
 		std::shared_ptr<editable_item> find(const std::string& _in_name) const;
 		std::shared_ptr<editable_item> push(const json& item_base);
 		std::shared_ptr<editable_item> pop(const std::string& _in_name);

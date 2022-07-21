@@ -25,14 +25,14 @@ editor_main_window::editor_main_window(QWidget *parent)
 void editor_main_window::init_widgets()
 {
 	ui->setupUi(this);
-	cur_mdi = ui->mdiArea;
-	cur_mdi->setViewMode(QMdiArea::TabbedView);
-	cur_mdi->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-	cur_mdi->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-	cur_mdi->setTabsMovable(true);
-	cur_mdi->setTabsClosable(true);
-	cur_mdi->setTabShape(QTabWidget::Rounded);
-	connect(cur_mdi, SIGNAL(subWindowActivated(QMdiSubWindow *)), this, SLOT(sub_window_activated(QMdiSubWindow*)));
+	m_cur_mdi = ui->mdiArea;
+	m_cur_mdi->setViewMode(QMdiArea::TabbedView);
+	m_cur_mdi->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+	m_cur_mdi->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+	m_cur_mdi->setTabsMovable(true);
+	m_cur_mdi->setTabsClosable(true);
+	m_cur_mdi->setTabShape(QTabWidget::Rounded);
+	connect(m_cur_mdi, SIGNAL(subWindowActivated(QMdiSubWindow *)), this, SLOT(sub_window_activated(QMdiSubWindow*)));
 }
 
 editor_main_window::~editor_main_window()
@@ -69,6 +69,7 @@ void editor_main_window::init_actions()
 	connect(ui->actionGoto, SIGNAL(triggered()), this, SLOT(action_goto_handler()));
 	connect(ui->actionFind, SIGNAL(triggered()), this, SLOT(action_find_handler()));
 	connect(ui->actionReIndex, SIGNAL(triggered()), this, SLOT(action_reindex_handler()));
+	connect(ui->actionTreeType, SIGNAL(triggered()), this, SLOT(action_tree_type_handler()));
 
 
 }
@@ -92,8 +93,20 @@ std::string editor_main_window::new_file_name()
 
 void editor_main_window::action_new_handler()
 {
-	_logger->debug("main_window action_new_handler");
+	m_logger->debug("main_window action_new_handler");
 	auto error_info = action_new_impl();
+	if (error_info.size())
+	{
+		QMessageBox::about(this, QString("Error"),
+			QString::fromStdString(error_info));
+		return;
+	}
+}
+
+void editor_main_window::action_tree_type_handler()
+{
+	m_logger->debug("main_window action_tree_type_handler");
+	auto error_info = action_tree_type_impl();
 	if (error_info.size())
 	{
 		QMessageBox::about(this, QString("Error"),
@@ -104,7 +117,7 @@ void editor_main_window::action_new_handler()
 
 void editor_main_window::action_reindex_handler()
 {
-	auto cur_ins = active_instance;
+	auto cur_ins = m_active_instance;
 	if (cur_ins)
 	{
 		cur_ins->reorder_index();
@@ -112,9 +125,9 @@ void editor_main_window::action_reindex_handler()
 }
 void editor_main_window::action_save_handler()
 {
-	_logger->debug("main_window action_save_handler");
-	auto cur_window = cur_mdi->activeSubWindow();
-	for (const auto one_tree : _instances)
+	m_logger->debug("main_window action_save_handler");
+	auto cur_window = m_cur_mdi->activeSubWindow();
+	for (const auto one_tree : m_instances)
 	{
 		if (one_tree->window == cur_window)
 		{
@@ -134,9 +147,9 @@ void editor_main_window::action_save_handler()
 
 void editor_main_window::action_save_all_handler()
 {
-	_logger->debug("main_window action_save_all_handler");
-	auto cur_window = cur_mdi->activeSubWindow();
-	for (const auto one_tree : _instances)
+	m_logger->debug("main_window action_save_all_handler");
+	auto cur_window = m_cur_mdi->activeSubWindow();
+	for (const auto one_tree : m_instances)
 	{
 		auto invalid_info = one_tree->save_handler();
 		if (!invalid_info.empty())
@@ -144,7 +157,7 @@ void editor_main_window::action_save_all_handler()
 			return;
 		}
 	}
-	auto cur_ins = active_instance;
+	auto cur_ins = m_active_instance;
 	if (cur_ins)
 	{
 		cur_ins->refresh();
@@ -156,8 +169,8 @@ void editor_main_window::action_save_all_handler()
 
 void editor_main_window::action_export_handler()
 {
-	_logger->debug("main_window action_export_handler");
-	auto cur_ins = active_instance;
+	m_logger->debug("main_window action_export_handler");
+	auto cur_ins = m_active_instance;
 	if (cur_ins)
 	{
 		cur_ins->export_handler();
@@ -166,9 +179,9 @@ void editor_main_window::action_export_handler()
 
 void editor_main_window::action_export_all_handler()
 {
-	_logger->debug("main_window action_export_all_handler");
-	auto cur_window = cur_mdi->activeSubWindow();
-	for (const auto one_tree : _instances)
+	m_logger->debug("main_window action_export_all_handler");
+	auto cur_window = m_cur_mdi->activeSubWindow();
+	for (const auto one_tree : m_instances)
 	{
 		auto invalid_info = one_tree->export_handler();
 		if (!invalid_info.empty())
@@ -181,15 +194,15 @@ void editor_main_window::action_export_all_handler()
 
 void editor_main_window::action_save_as_handler()
 {
-	_logger->debug("main_window action_save_as_handler");
-	auto cur_ins = active_instance;
+	m_logger->debug("main_window action_save_as_handler");
+	auto cur_ins = m_active_instance;
 
 	if (!cur_ins)
 	{
 		return;
 	}
 	auto fileName = QFileDialog::getOpenFileName(this,
-		tr("Save File"), QString::fromStdString(data_folder.string()), tr("Tree File (*.json)"));
+		tr("Save File"), QString::fromStdString(m_data_folder.string()), tr("Tree File (*.json)"));
 	if (!fileName.size())
 	{
 		return;
@@ -206,9 +219,9 @@ void editor_main_window::action_save_as_handler()
 
 void editor_main_window::closeEvent(QCloseEvent* ev)
 {
-	_logger->debug("main_window closeEvent");
+	m_logger->debug("main_window closeEvent");
 	bool modified = false;
-	for (auto one_ins : _instances)
+	for (auto one_ins : m_instances)
 	{
 		if (one_ins->modified)
 		{
@@ -232,8 +245,8 @@ void editor_main_window::closeEvent(QCloseEvent* ev)
 }
 void editor_main_window::action_insert_handler()
 {
-	_logger->debug("main_window action_insert_handler");
-	auto cur_ins = active_instance;
+	m_logger->debug("main_window action_insert_handler");
+	auto cur_ins = m_active_instance;
 
 	if (!cur_ins)
 	{
@@ -243,8 +256,8 @@ void editor_main_window::action_insert_handler()
 }
 void editor_main_window::action_copy_handler()
 {
-	_logger->debug("main_window action_copy_handler");
-	auto cur_ins = active_instance;
+	m_logger->debug("main_window action_copy_handler");
+	auto cur_ins = m_active_instance;
 
 	if (!cur_ins)
 	{
@@ -254,8 +267,8 @@ void editor_main_window::action_copy_handler()
 }
 void editor_main_window::action_del_handler()
 {
-	_logger->debug("main_window action_del_handler");
-	auto cur_ins = active_instance;
+	m_logger->debug("main_window action_del_handler");
+	auto cur_ins = m_active_instance;
 
 	if (!cur_ins)
 	{
@@ -266,8 +279,8 @@ void editor_main_window::action_del_handler()
 
 void editor_main_window::action_move_up_handler()
 {
-	_logger->debug("main_window action_move_up_handler");
-	auto cur_ins = active_instance;
+	m_logger->debug("main_window action_move_up_handler");
+	auto cur_ins = m_active_instance;
 
 	if (!cur_ins)
 	{
@@ -277,8 +290,8 @@ void editor_main_window::action_move_up_handler()
 }
 void editor_main_window::action_move_down_handler()
 {
-	_logger->debug("main_window action_move_down_handler");
-	auto cur_ins = active_instance;
+	m_logger->debug("main_window action_move_down_handler");
+	auto cur_ins = m_active_instance;
 
 	if (!cur_ins)
 	{
@@ -289,8 +302,8 @@ void editor_main_window::action_move_down_handler()
 
 void editor_main_window::action_paste_handler()
 {
-	_logger->debug("main_window action_paste_handler");
-	auto cur_ins = active_instance;
+	m_logger->debug("main_window action_paste_handler");
+	auto cur_ins = m_active_instance;
 
 	if (!cur_ins)
 	{
@@ -301,8 +314,8 @@ void editor_main_window::action_paste_handler()
 
 void editor_main_window::action_cut_handler()
 {
-	_logger->debug("main_window action_cut_handler");
-	auto cur_ins = active_instance;
+	m_logger->debug("main_window action_cut_handler");
+	auto cur_ins = m_active_instance;
 
 	if (!cur_ins)
 	{
@@ -320,7 +333,7 @@ std::string editor_main_window::action_new_impl()
 
 	}
 	const auto& cur_root_config = opt_root_config.value();
-	auto full_file = data_folder / new_file_name();
+	auto full_file = m_data_folder / new_file_name();
 	basic_node_desc cur_root_desc;
 	cur_root_desc.idx = 0;
 	cur_root_desc.type = "root";
@@ -330,6 +343,11 @@ std::string editor_main_window::action_new_impl()
 	{
 		return "cant create root node";
 	}
-	tree_instance* cur_tree_instance = new tree_instance(full_file.string(), cur_root, this);
+	tree_instance* cur_tree_instance = new tree_instance(full_file.string(), std::string{}, cur_root, this);
 	return "";
+}
+
+std::string editor_main_window::action_tree_type_impl()
+{
+	return {};
 }

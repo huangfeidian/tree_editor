@@ -16,7 +16,7 @@ namespace spiritsaway::tree_editor
 	public:
 		box_outline(const QColor& _in_color) :
 			QGraphicsItem(),
-			_color(_in_color)
+			m_color(_in_color)
 
 		{
 
@@ -24,13 +24,13 @@ namespace spiritsaway::tree_editor
 		QPainterPath shape() const
 		{
 			auto cur_path = QPainterPath();
-			cur_path.addRect(_rect);
+			cur_path.addRect(m_rect);
 			return cur_path;
 
 		}
 		QRectF boundingRect() const
 		{
-			return _rect;
+			return m_rect;
 		}
 		void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr)
 		{
@@ -45,12 +45,12 @@ namespace spiritsaway::tree_editor
 				p.setWidth(1);
 				painter->setPen(p);
 			}
-			painter->setBrush(_color);
-			float r = _rect.height() / 8.0;
-			painter->drawRoundedRect(_rect, r, r);
+			painter->setBrush(m_color);
+			float r = m_rect.height() / 8.0;
+			painter->drawRoundedRect(m_rect, r, r);
 		}
-		QRectF _rect;
-		QColor _color;
+		QRectF m_rect;
+		QColor m_color;
 	};
 
 
@@ -59,15 +59,15 @@ namespace spiritsaway::tree_editor
 		Q_OBJECT
 
 	public:
-		basic_node* _model;
-		tree_instance* _manager;
-		QGraphicsItem* selected_effect;
-		std::vector<node_graph*> _children;
-		box_outline* _outline;
+		basic_node* m_model;
+		tree_instance* m_manager;
+		QGraphicsItem* m_selected_effect;
+		std::vector<node_graph*> m_children;
+		box_outline* m_outline;
 	public:
-		std::uint32_t layout_x;
-		float layout_y;
-		QRectF cur_bounding;
+		std::uint32_t m_layout_x;
+		float m_layout_y;
+		QRectF m_cur_bounding;
 	public:
 		node_graph(basic_node* _in_model, tree_instance* _in_manager,
 			QColor _text_color);

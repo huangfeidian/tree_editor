@@ -27,18 +27,18 @@ public:
 	choice_type run();
 
 private:
-    Ui::search_select_dialog *ui;
-	const std::vector<choice_type>& _choices;
-	QStringList q_choices;
-	std::string _result;
+    Ui::search_select_dialog *m_ui;
+	const std::vector<choice_type>& m_choices;
+	QStringList m_str_choices;
+	std::string m_result;
 public slots:
 
 	void close_handler();
 	void search();
 	void double_click(const QModelIndex& _index);
 public:
-	bool valid = false;
-	QStringListModel* list_model;
+	bool m_valid = false;
+	QStringListModel* m_list_model;
 };
 
 #endif // SEARCH_SELECT_DIALOG_H

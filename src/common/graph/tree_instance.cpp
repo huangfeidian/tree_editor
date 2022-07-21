@@ -25,7 +25,7 @@ using namespace spiritsaway::tree_editor;
 
 tree_view::tree_view(QGraphicsScene* in_scene, tree_instance* in_graph_mgr)
 	: QGraphicsView(in_scene)
-	, _graph_mgr(in_graph_mgr)
+	, m_graph_mgr(in_graph_mgr)
 {
 	setRenderHints(QPainter::Antialiasing);
 	setTransformationAnchor(QGraphicsView::NoAnchor);
@@ -43,11 +43,11 @@ void tree_view::wheelEvent(QWheelEvent* e)
 	{
 		scale(1 / step, 1 / step);
 	}
-	cur_trans = transform();
+	m_cur_trans = transform();
 }
 void tree_view::closeEvent(QCloseEvent* e)
 {
-	_graph_mgr->close_handler(e);
+	m_graph_mgr->close_handler(e);
 }
 void tree_view::keyPressEvent(QKeyEvent* e)
 {
@@ -83,7 +83,7 @@ void tree_instance::close_handler(QCloseEvent* e)
 	{
 		QMessageBox::StandardButton  defaultBtn = QMessageBox::NoButton; //缺省按钮
 		QMessageBox::StandardButton result;//返回选择的按钮
-		result = QMessageBox::question(_view, QString("Confirm"),
+		result = QMessageBox::question(m_view, QString("Confirm"),
 			QString("close without saving"), QMessageBox::Yes|QMessageBox::No, defaultBtn);
 		if (result == QMessageBox::No)
 		{
@@ -99,7 +99,7 @@ void tree_instance::focus_on(std::size_t node_idx)
 	if (cur_node == nullptr)
 	{
 		auto notify_info = fmt::format("cant find node with idx {}", node_idx);
-		QMessageBox::about(_view, QString("Error"),
+		QMessageBox::about(m_view, QString("Error"),
 			QString::fromStdString(notify_info));
 	}
 	else
@@ -110,10 +110,10 @@ void tree_instance::focus_on(std::size_t node_idx)
 void tree_instance::focus_on(basic_node* cur_node)
 {
 	auto temp_node = cur_node;
-	while (temp_node->_parent)
+	while (temp_node->m_parent)
 	{
-		temp_node->_is_collapsed = false;
-		temp_node = temp_node->_parent;
+		temp_node->m_is_collapsed = false;
+		temp_node = temp_node->m_parent;
 	}
 	if (selected_node && selected_node != cur_node)
 	{
@@ -121,10 +121,10 @@ void tree_instance::focus_on(basic_node* cur_node)
 
 	}
 	selected_node = cur_node;
-	set_temp_color(cur_node->_idx, Qt::magenta);
+	set_temp_color(cur_node->m_idx, Qt::magenta);
 
 	refresh();
-	auto cur_graph_node = find_graph_by_node(_graph_root, cur_node);
+	auto cur_graph_node = find_graph_by_node(m_graph_root, cur_node);
 	focus_on(cur_graph_node);
 }
 void tree_instance::focus_on(const node_graph* cur_node)
@@ -135,24 +135,25 @@ void tree_instance::focus_on(const node_graph* cur_node)
 	}
 	/*auto scene_pos = cur_node->mapToScene(0, 0);
 	auto view_pos = _view->mapFromScene(scene_pos);*/
-	_view->ensureVisible(cur_node, 50);
+	m_view->ensureVisible(cur_node, 50);
 	return;
 }
 
 
-tree_instance::tree_instance(const std::string& in_file_path, 
+tree_instance::tree_instance(const std::string& in_file_path,  const std::string& in_tree_type,
 	basic_node* in_root, multi_instance_window* _in_main)
-	: _root(in_root)
+	: m_root(in_root)
 	, parent(_in_main)
-	, _scene(new QGraphicsScene())
-	, _view(new tree_view(_scene, this))
+	, m_scene(new QGraphicsScene())
+	, m_view(new tree_view(m_scene, this))
 	, file_path(in_file_path)
 	, file_name(file_path.filename())
-	, _logger(_in_main->logger())
+	, m_logger(_in_main->logger())
+	, m_tree_type(in_tree_type)
 {
-	_view->setAttribute(Qt::WA_DeleteOnClose);
+	m_view->setAttribute(Qt::WA_DeleteOnClose);
 	set_scene_background();
-	window = parent->add_sub_window(_view);
+	window = parent->add_sub_window(m_view);
 	window->setWindowTitle(QString::fromStdString(file_name.string()));
 	std::deque<const basic_node*>	all_nodes;
 	all_nodes.push_back(in_root);
@@ -160,8 +161,8 @@ tree_instance::tree_instance(const std::string& in_file_path,
 	{
 		auto cur_node = all_nodes.front();
 		all_nodes.pop_front();
-		node_seq_idx = std::max(node_seq_idx, cur_node->_idx + 1);
-		for (const auto one_child_node : cur_node->_children)
+		node_seq_idx = std::max(node_seq_idx, cur_node->m_idx + 1);
+		for (const auto one_child_node : cur_node->m_children)
 		{
 			all_nodes.push_back(one_child_node);
 		}
@@ -176,33 +177,33 @@ std::uint32_t tree_instance::next_node_seq()
 
 void tree_instance::display_tree()
 {
-	_logger->debug("tree_instance display tree {}", file_name.string());
+	m_logger->debug("tree_instance display tree {}", file_name.string());
 	update_title();
-	_graph_root = _build_tree_impl(_root);
-	auto layouter = tree_layouter(_graph_root);
+	m_graph_root = m_build_tree_impl(m_root);
+	auto layouter = tree_layouter(m_graph_root);
 	layouter.run();
-	_display_links_impl(_graph_root);
+	display_links_impl(m_graph_root);
 
 }
 
-node_graph* tree_instance::_build_tree_impl(basic_node* cur_node)
+node_graph* tree_instance::m_build_tree_impl(basic_node* cur_node)
 {
 	//_logger->debug("tree_instance _build_tree_impl  {} for node {}", 
 	//	file_name.string(), cur_node->_idx);
 	auto new_node =  new node_graph(cur_node, this, QColor(Qt::black));
-	if (!cur_node->_is_collapsed)
+	if (!cur_node->m_is_collapsed)
 	{
-		new_node->_children.reserve(cur_node->_children.size());
-		for (auto one_child : cur_node->_children)
+		new_node->m_children.reserve(cur_node->m_children.size());
+		for (auto one_child : cur_node->m_children)
 		{
-			auto temp_child = _build_tree_impl(one_child);
-			new_node->_children.push_back(temp_child);
+			auto temp_child = m_build_tree_impl(one_child);
+			new_node->m_children.push_back(temp_child);
 		}
 	}
-	_scene->addItem(new_node);
+	m_scene->addItem(new_node);
 	return new_node;
 }
-void tree_instance::_display_links_impl(node_graph* cur_node)
+void tree_instance::display_links_impl(node_graph* cur_node)
 {
 	
 	auto s_pos = cur_node->right_pos();
@@ -213,7 +214,7 @@ void tree_instance::_display_links_impl(node_graph* cur_node)
 	pen.setWidth(1);
 	pen.setStyle(Qt::SolidLine);
 	auto b = QBrush(Qt::black, Qt::NoBrush);
-	for (auto one_child : cur_node->_children)
+	for (auto one_child : cur_node->m_children)
 	{
 		auto d_pos = one_child->left_pos();
 		QPainterPath path(s_pos);
@@ -223,18 +224,18 @@ void tree_instance::_display_links_impl(node_graph* cur_node)
 
 		path.cubicTo(c1, c2, d_pos);
 
-		auto cur_path = _scene->addPath(path, pen, b);
+		auto cur_path = m_scene->addPath(path, pen, b);
 		cur_path->setZValue(1.0);
 		//auto new_line = _scene->addLine(QLineF(s_pos, d_pos));
 		//new_line->setZValue(1.0);
-		_display_links_impl(one_child);
+		display_links_impl(one_child);
 	}
-	if (cur_node->_model->_is_collapsed)
+	if (cur_node->m_model->m_is_collapsed)
 	{
 		//cur_node->draw_cross(Qt::magenta);
 		cur_node->draw_right_triangle(Qt::magenta);
 	}
-	if (cur_node->_model->_has_break_point)
+	if (cur_node->m_model->m_has_break_point)
 	{
 		cur_node->draw_left_circle(Qt::red);
 	}
@@ -243,14 +244,14 @@ void tree_instance::_display_links_impl(node_graph* cur_node)
 
 void tree_instance::refresh()
 {
-	_logger->debug("tree_instance {} refresh ", file_name.string());
+	m_logger->debug("tree_instance {} refresh ", file_name.string());
 	set_dirty();
 	//clean_select_effect(selected_node);
-	_scene->clear();
+	m_scene->clear();
 	display_tree();
 	if (selected_node)
 	{
-		auto cur_node = find_graph_by_node(_graph_root, selected_node);
+		auto cur_node = find_graph_by_node(m_graph_root, selected_node);
 		if (cur_node)
 		{
 			cur_node->setSelected(true);
@@ -258,7 +259,7 @@ void tree_instance::refresh()
 	}
 	for (auto[k, v] : temp_node_colors)
 	{
-		auto cur_node = find_graph_by_idx(_graph_root, k);
+		auto cur_node = find_graph_by_idx(m_graph_root, k);
 		if (!cur_node)
 		{
 			continue;
@@ -274,7 +275,7 @@ void tree_instance::cancel_select()
 	{
 		return;
 	}
-	auto cur_node = find_graph_by_node(_graph_root, selected_node);
+	auto cur_node = find_graph_by_node(m_graph_root, selected_node);
 	cur_node->setSelected(false);
 	clean_select_effect(selected_node);
 }
@@ -293,7 +294,7 @@ void tree_instance::select_changed(node_graph* cur_node, int state)
 	}
 	else
 	{
-		selected_node = cur_node->_model;
+		selected_node = cur_node->m_model;
 		show_select_effect(selected_node);
 	}
 }
@@ -303,7 +304,7 @@ void tree_instance::show_select_effect(basic_node* cur_node)
 	{
 		return;
 	}
-	set_temp_color(cur_node->_idx, Qt::magenta);
+	set_temp_color(cur_node->m_idx, Qt::magenta);
 
 	//auto cur_graph_node = find_graph_by_node(_graph_root, cur_node);
 	//if (!cur_graph_node)
@@ -319,7 +320,7 @@ void tree_instance::clean_select_effect(basic_node* cur_node)
 	{
 		return;
 	}
-	clear_temp_color(cur_node->_idx);
+	clear_temp_color(cur_node->m_idx);
 	//auto cur_graph_node = find_graph_by_node(_graph_root, cur_node);
 	//if (!cur_graph_node)
 	//{
@@ -330,7 +331,7 @@ void tree_instance::clean_select_effect(basic_node* cur_node)
 }
 void tree_instance::insert_handler()
 {
-	_logger->debug("tree_instance {} insert_handler begin",
+	m_logger->debug("tree_instance {} insert_handler begin",
 		file_name.string());
 	if (!selected_node)
 	{
@@ -345,45 +346,45 @@ void tree_instance::insert_handler()
 		return;
 	}
 	auto new_idx = next_node_seq();
-	_logger->debug("tree_instance {} get  new node idx {}",
+	m_logger->debug("tree_instance {} get  new node idx {}",
 		file_name.string(), new_idx);
-	auto cur_new_node = _root->create_node(cur_choice, selected_node, new_idx);
+	auto cur_new_node = m_root->create_node(cur_choice, selected_node, new_idx);
 	cur_new_node->refresh_editable_items();
-	_logger->debug("tree_instance {} create new node",
+	m_logger->debug("tree_instance {} create new node",
 		file_name.string());
 	selected_node->add_child(cur_new_node);
 	refresh();
-	_logger->debug("tree_instance {} insert_handler finish",
+	m_logger->debug("tree_instance {} insert_handler finish",
 		file_name.string());
 
 }
 void tree_instance::delete_handler()
 {
-	_logger->debug("tree_instance {} delete_handler ",
+	m_logger->debug("tree_instance {} delete_handler ",
 		file_name.string());
 	if (!selected_node)
 	{
 		return;
 	}
-	if (!selected_node->_parent)
+	if (!selected_node->m_parent)
 	{
 		return;
 	}
-	selected_node->_parent->remove_child(selected_node);
+	selected_node->m_parent->remove_child(selected_node);
 	selected_node->destroy();
 	selected_node = nullptr;
 	refresh();
 }
 basic_node* tree_instance::copy_handler()
 {
-	_logger->debug("tree_instance {} copy_handler ",
+	m_logger->debug("tree_instance {} copy_handler ",
 		file_name.string());
 	if (!selected_node)
 	{
 		return nullptr;
 	}
 	// root node cant be copyed
-	if (!selected_node->_parent)
+	if (!selected_node->m_parent)
 	{
 		return nullptr;
 	}
@@ -410,20 +411,20 @@ void tree_instance::paste_handler(basic_node* cur_node)
 	{
 		auto cur_node = all_nodes.front();
 		all_nodes.pop_front();
-		cur_node->_idx = next_node_seq();
-		for (auto one_child : cur_node->_children)
+		cur_node->m_idx = next_node_seq();
+		for (auto one_child : cur_node->m_children)
 		{
 			all_nodes.push_back(one_child);
 		}
 	}
-	_logger->debug("tree_instance {} paste_handler parent {} child {}",
-		file_name.string(), selected_node->_idx, cur_node->_idx);
+	m_logger->debug("tree_instance {} paste_handler parent {} child {}",
+		file_name.string(), selected_node->m_idx, cur_node->m_idx);
 	selected_node->add_child(cur_node);
 	refresh();
 }
 basic_node* tree_instance::cut_handler()
 {
-	_logger->debug("tree_instance {} cut_handler ",
+	m_logger->debug("tree_instance {} cut_handler ",
 		file_name.string());
 	if (!selected_node)
 	{
@@ -433,7 +434,7 @@ basic_node* tree_instance::cut_handler()
 	{
 		return nullptr;
 	}
-	selected_node->_parent->remove_child(selected_node);
+	selected_node->m_parent->remove_child(selected_node);
 	auto result = selected_node;
 	selected_node = nullptr;
 	refresh();
@@ -441,24 +442,24 @@ basic_node* tree_instance::cut_handler()
 }
 void tree_instance::move_handler(bool is_up)
 {
-	_logger->debug("tree_instance {} move_handler is_up {} ",
+	m_logger->debug("tree_instance {} move_handler is_up {} ",
 		file_name.string(), is_up);
 	if (!selected_node)
 	{
 		return;
 	}
-	selected_node->_parent->move_child(selected_node, is_up);
+	selected_node->m_parent->move_child(selected_node, is_up);
 	refresh();
 }
 node_graph* tree_instance::find_graph_by_node(node_graph* cur_graph, basic_node* cur_node) const
 {
 	//_logger->debug("tree_instance {} find_graph_by_node cur_graph {} cur_node {} ",
 	//	file_name.string(), cur_graph->_model->_idx, cur_node->_idx);
-	if (cur_graph->_model == cur_node)
+	if (cur_graph->m_model == cur_node)
 	{
 		return cur_graph;
 	}
-	for (auto one_child : cur_graph->_children)
+	for (auto one_child : cur_graph->m_children)
 	{
 		auto temp_result = find_graph_by_node(one_child, cur_node);
 		if (temp_result)
@@ -472,11 +473,11 @@ node_graph* tree_instance::find_graph_by_idx(node_graph* cur_graph, std::uint32_
 {
 	//_logger->debug("tree_instance {} find_graph_by_idx cur_graph {} cur_node {} ",
 	//	file_name.string(), cur_graph->_model->_idx, cur_idx);
-	if (cur_graph->_model->_idx == cur_idx)
+	if (cur_graph->m_model->m_idx == cur_idx)
 	{
 		return cur_graph;
 	}
-	for (auto one_child : cur_graph->_children)
+	for (auto one_child : cur_graph->m_children)
 	{
 		auto temp_result = find_graph_by_idx(one_child, cur_idx);
 		if (temp_result)
@@ -489,18 +490,18 @@ node_graph* tree_instance::find_graph_by_idx(node_graph* cur_graph, std::uint32_
 basic_node* tree_instance::find_node_by_idx(std::uint32_t idx)
 {
 	std::deque<basic_node*> temp_nodes;
-	temp_nodes.push_back(_root);
+	temp_nodes.push_back(m_root);
 	while (!temp_nodes.empty())
 	{
 		auto cur_front = temp_nodes.front();
 		temp_nodes.pop_front();
-		if (cur_front->_idx == idx)
+		if (cur_front->m_idx == idx)
 		{
 			return cur_front;
 		}
 		else
 		{
-			for (auto onde_child : cur_front->_children)
+			for (auto onde_child : cur_front->m_children)
 			{
 				temp_nodes.push_back(onde_child);
 			}
@@ -513,15 +514,15 @@ void tree_instance::reorder_index()
 	node_seq_idx = 0;
 	std::deque<basic_node*> all_nodes;
 	
-	all_nodes.push_back(_root);
+	all_nodes.push_back(m_root);
 
 	while (!all_nodes.empty())
 	{
 		auto cur_node = all_nodes.front();
 		all_nodes.pop_front();
-		cur_node->_idx = next_node_seq();
+		cur_node->m_idx = next_node_seq();
 		
-		for (auto one_child : cur_node->_children)
+		for (auto one_child : cur_node->m_children)
 		{
 			all_nodes.push_back(one_child);
 		}
@@ -536,28 +537,27 @@ std::string tree_instance::save_handler()
 	{
 		return "";
 	}
-	_logger->debug("tree_instance {} save_handler",
+	m_logger->debug("tree_instance {} save_handler",
 		file_name.string());
 	if (!modified)
 	{
 		return "";
 	}
 
-	auto invalid_info = _root->check_valid();
+	auto invalid_info = m_root->check_valid();
 	if (invalid_info.empty())
 	{
 		json::array_t nodes_info;
 		std::deque<basic_node*> all_nodes;
 
-		all_nodes.push_back(_root);
+		all_nodes.push_back(m_root);
 
 		while (!all_nodes.empty())
 		{
 			auto cur_node = all_nodes.front();
 			all_nodes.pop_front();
 			nodes_info.push_back(cur_node->to_json());
-
-			for (auto one_child : cur_node->_children)
+			for (auto one_child : cur_node->m_children)
 			{
 				all_nodes.push_back(one_child);
 			}
@@ -566,8 +566,7 @@ std::string tree_instance::save_handler()
 		dump_json["nodes"] = nodes_info;
 		dump_json["extra"] = json::object_t();
 		dump_json["name"] = file_name.string();
-
-
+		dump_json["tree_type"] = m_tree_type;
 		time_t rawtime;
 		struct tm * timeinfo;
 		char buffer[80];
@@ -588,7 +587,7 @@ std::string tree_instance::save_handler()
 	{
 		std::string notify_info = fmt::format("fail to save {} error is {}",
 			file_name.string(), invalid_info);
-		QMessageBox::about(_view, QString("Error"),
+		QMessageBox::about(m_view, QString("Error"),
 			QString::fromStdString(notify_info));
 	}
 	return invalid_info;
@@ -600,13 +599,13 @@ std::string tree_instance::export_handler()
 }
 void tree_instance::deactivate_handler()
 {
-	_logger->debug("tree_instance {} deactivate_handler ",
+	m_logger->debug("tree_instance {} deactivate_handler ",
 		file_name.string());
 	return;
 }
 void tree_instance::activate_handler()
 {
-	_logger->debug("tree_instance {} activate_handler ",
+	m_logger->debug("tree_instance {} activate_handler ",
 		file_name.string());
 	return;
 }
@@ -633,7 +632,7 @@ void tree_instance::set_scene_background()
 	painter.translate(0, 0);
 	painter.drawPolyline(myPolygon1);
 	painter.drawPolyline(myPolygon2);
-	_scene->setBackgroundBrush(pixmap);
+	m_scene->setBackgroundBrush(pixmap);
 }
 
 void tree_instance::save_to_svg()
@@ -656,9 +655,9 @@ void tree_instance::save_to_svg()
 }
 void tree_instance::save_to_png()
 {
-	QImage image(_scene->width(), _scene->height() , QImage::Format_RGB32);
+	QImage image(m_scene->width(), m_scene->height() , QImage::Format_RGB32);
 	QPainter painter(&image);
-	_scene->render(&painter);
+	m_scene->render(&painter);
 	auto png_path = file_path;
 	png_path.replace_extension("png");
 	image.save(QString::fromStdString(png_path.string()));
@@ -668,13 +667,13 @@ void tree_instance::search_node()
 {
 	std::vector<basic_node*> all_nodes;
 	std::deque<basic_node*> queue_nodes;
-	queue_nodes.push_back(_root);
+	queue_nodes.push_back(m_root);
 	while (!queue_nodes.empty())
 	{
 		auto temp_node = queue_nodes.front();
 		queue_nodes.pop_front();
 		all_nodes.push_back(temp_node);
-		for (auto one_child : temp_node->_children)
+		for (auto one_child : temp_node->m_children)
 		{
 			queue_nodes.push_back(one_child);
 		}
