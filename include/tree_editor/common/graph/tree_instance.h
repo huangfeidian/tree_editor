@@ -72,6 +72,7 @@ namespace spiritsaway::tree_editor
 		std::uint32_t next_node_seq();
 		virtual std::string save_handler();
 		virtual std::string export_handler();
+		virtual std::string try_set_tree_type(const std::string& new_tree_type);
 		void deactivate_handler();
 		void activate_handler();
 		void set_scene_background();

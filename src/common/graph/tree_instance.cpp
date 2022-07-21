@@ -715,4 +715,15 @@ void tree_instance::set_temp_color(std::uint32_t node_idx, QColor color)
 	temp_node_colors[node_idx] = color;
 }
 
+std::string tree_instance::try_set_tree_type(const std::string& new_tree_type)
+{
+	if (new_tree_type == m_tree_type)
+	{
+		return {};
+	}
+	m_tree_type = new_tree_type;
+	m_logger->debug("tree_instance {} try_set_tree_type {} ",
+		file_name.string(), new_tree_type);
+	return {};
+}
 

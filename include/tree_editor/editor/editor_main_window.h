@@ -61,5 +61,6 @@ public slots:
 protected:
 	virtual std::string action_new_impl();
 	virtual std::string action_tree_type_impl();
+	
 };
 

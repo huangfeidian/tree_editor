@@ -69,5 +69,7 @@ namespace spiritsaway::tree_editor
 		
 		virtual std::variant<std::string, std::vector<basic_node_desc>> load_desc_from_file_path(const json::object_t& tree_json_content);
 		virtual std::variant<std::string, basic_node*> construct_root_from_node_descs(const std::vector<basic_node_desc>& nodes_info);
+		virtual void try_set_tree_type(const std::string& new_tree_type);
+		virtual tree_instance* create_instance(const std::string& file_path, const std::string& tree_type, basic_node* cur_root);
 	};
 }

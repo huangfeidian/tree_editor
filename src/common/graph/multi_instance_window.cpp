@@ -273,7 +273,7 @@ std::variant<std::string, tree_instance*> multi_instance_window::action_open_imp
 			cur_tree_type = tree_type_iter->second.get<std::string>();
 		}
 	}
-	tree_instance* cur_tree_instance = new tree_instance(file_name, cur_tree_type, std::get<basic_node*>(root_var), this);
+	tree_instance* cur_tree_instance = create_instance(file_name, cur_tree_type, std::get<basic_node*>(root_var));
 	return cur_tree_instance;
 }
 
@@ -368,4 +368,22 @@ std::variant<std::string, basic_node*> multi_instance_window::construct_root_fro
 	}
 	return cur_root;
 
+}
+
+void multi_instance_window::try_set_tree_type(const std::string& new_tree_type)
+{
+	if (m_active_instance)
+	{
+		auto cur_err = m_active_instance->try_set_tree_type(new_tree_type);
+		if (!cur_err.empty())
+		{
+			QMessageBox::about(this, QString("Error"),
+				QString::fromStdString(cur_err));
+			return;
+		}
+	}
+}
+tree_instance* multi_instance_window::create_instance(const std::string& file_path, const std::string& tree_type, basic_node* cur_root)
+{
+	return new tree_instance(file_path, tree_type, cur_root, this);
 }

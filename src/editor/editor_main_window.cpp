@@ -343,7 +343,7 @@ std::string editor_main_window::action_new_impl()
 	{
 		return "cant create root node";
 	}
-	tree_instance* cur_tree_instance = new tree_instance(full_file.string(), std::string{}, cur_root, this);
+	tree_instance* cur_tree_instance = create_instance(full_file.string(), std::string{}, cur_root);
 	return "";
 }
 
