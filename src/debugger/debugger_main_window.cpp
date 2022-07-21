@@ -209,7 +209,7 @@ void debugger_main_window::action_http_handler()
 	auto cur_port_dialog = new uint_dialog("http server port", 8090, this);
 	auto result = cur_port_dialog->run();
 	
-	if (result <= 1024 or result >= 20000)
+	if (result <= 1024 || result >= 20000)
 	{
 		auto notify_info = "port number shoude between 1024 and 20000";
 		QMessageBox::about(this, QString("Error"),
