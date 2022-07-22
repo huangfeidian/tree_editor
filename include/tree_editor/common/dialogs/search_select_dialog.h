@@ -21,8 +21,8 @@ class search_select_dialog : public QDialog
 		using choice_type = std::string;
 public:
     explicit search_select_dialog(const std::vector<choice_type>& _in_choices,
-		QWidget *parent = nullptr
-		);
+		QWidget *parent = nullptr,
+		std::string in_title = {});
     ~search_select_dialog();
 	choice_type run();
 

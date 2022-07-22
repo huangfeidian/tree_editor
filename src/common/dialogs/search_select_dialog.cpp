@@ -5,13 +5,13 @@
 #include <ui_search_select_dialog.h>
 
 
-search_select_dialog::search_select_dialog(const std::vector<choice_type>& _in_choices, QWidget *parent) :
+search_select_dialog::search_select_dialog(const std::vector<choice_type>& _in_choices, QWidget *parent, std::string in_title) :
     QDialog(parent),
     m_ui(new Ui::search_select_dialog),
 	m_choices(_in_choices)
 {
     m_ui->setupUi(this);
-	
+	this->setWindowTitle(QString::fromStdString(in_title));
 	m_str_choices.reserve(m_choices.size());
 	for (const auto& one_choice : m_choices)
 	{
