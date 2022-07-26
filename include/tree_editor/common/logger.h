@@ -30,12 +30,14 @@ namespace spiritsaway::tree_editor
 			auto logger = std::make_shared<spdlog::logger>(name, spdlog::sinks_init_list{ console_sink, file_sink });
 			logger->set_level(spdlog::level::trace);
 			_cache[name] = logger;
+			logger->flush_on(spdlog::level::debug);
 			return logger;
 		}
 	private:
 		logger_mgr()
 		{
-
+			spdlog::flush_every(std::chrono::seconds(3));
+			spdlog::flush_on(spdlog::level::err);
 		}
 	public:
 		static logger_mgr& instance()
