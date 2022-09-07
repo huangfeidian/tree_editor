@@ -43,7 +43,7 @@ namespace spiritsaway::tree_editor
 		Ui::debugger_main_window *ui;
 		log_dialog* _log_viewer;
 		debug_source _debug_source = debug_source::no_debug;
-		std::shared_ptr<http_server::server> _http_server;
+		std::shared_ptr<debug_server> _http_server;
 		asio::io_context _asio_context;
 		QTimer* _asio_poll_timer;
 		std::filesystem::path history_folder;

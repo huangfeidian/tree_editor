@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include <deque>
 
-#include <http_server/http_server.hpp>
+#include <http_utils/http_server.h>
 #include <any_container/decode.h>
 #include <tree_editor/common/debug_cmd.h>
 #include <queue>
@@ -10,26 +10,21 @@
 namespace spiritsaway::tree_editor
 {
 	
-	using namespace spiritsaway::http_server;
-	class debug_handler
+	class debug_server: public http_utils::http_server
 	{
-		debug_cmd_receiver _cmd_queue;
+		debug_cmd_receiver m_cmd_queue;
 
 	public:
-		debug_handler(const debug_cmd_receiver& in_cmd_queue)
-			: _cmd_queue(in_cmd_queue)
+		debug_server(asio::io_context& io_context, std::shared_ptr<spdlog::logger> in_logger, const std::string& address, const std::string& port, const debug_cmd_receiver& in_cmd_queue)
+			: http_utils::http_server(io_context, in_logger, address, port)
+			, m_cmd_queue(in_cmd_queue)
 		{
 
 		}
 
-		void operator()(std::weak_ptr<request> weak_req, reply_handler rep_handler)
+		void handle_request(const http_utils::request& req, http_utils::reply_handler rep_handler) override
 		{
-			auto req_ptr = weak_req.lock();
-			if(!req_ptr)
-			{
-				return;
-			}
-			auto& req = *req_ptr;
+			
 			std::string error_desc = "";
 			std::string entity_id = "";
 			std::vector<node_trace_cmd> cmds;
@@ -75,22 +70,24 @@ namespace spiritsaway::tree_editor
 					break;
 				}
 
-				_cmd_queue(entity_id, cmds);
+				m_cmd_queue(entity_id, cmds);
 				break;
 			}
-			reply cur_reply;
-			cur_reply.headers.push_back(header{ "Content-Type", "text/html" });
-			cur_reply.headers.push_back(header{ "Server", "Http Server" });
+			http_utils::reply cur_reply;
+			cur_reply.headers.push_back(http_utils::header{ "Content-Type", "text/html" });
+			cur_reply.headers.push_back(http_utils::header{ "Server", "Http Server" });
 
 			if (error_desc.size())
 			{
 				std::cout << "http get data fail: " << error_desc << std::endl;
 				cur_reply.content = error_desc;
-				cur_reply.status = reply::status_type::bad_request;
+				cur_reply.status_code = std::uint32_t(http_utils::reply::status_type::bad_request);
+				cur_reply.status_detail = "Bad Request";
 			}
 			else
 			{
-				cur_reply.status = reply::status_type::ok;
+				cur_reply.status_code = std::uint32_t(http_utils::reply::status_type::ok);
+				cur_reply.status_detail = "OK";
 				cur_reply.content = "ok";
 			}
 			rep_handler(cur_reply);
