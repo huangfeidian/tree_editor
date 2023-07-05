@@ -82,12 +82,10 @@ namespace spiritsaway::tree_editor
 				std::cout << "http get data fail: " << error_desc << std::endl;
 				cur_reply.content = error_desc;
 				cur_reply.status_code = std::uint32_t(http_utils::reply::status_type::bad_request);
-				cur_reply.status_detail = "Bad Request";
 			}
 			else
 			{
 				cur_reply.status_code = std::uint32_t(http_utils::reply::status_type::ok);
-				cur_reply.status_detail = "OK";
 				cur_reply.content = "ok";
 			}
 			rep_handler(cur_reply);
