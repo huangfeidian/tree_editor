@@ -409,10 +409,10 @@ void tree_instance::paste_handler(basic_node* cur_node)
 	all_nodes.push_back(cur_node);
 	while (!all_nodes.empty())
 	{
-		auto cur_node = all_nodes.front();
+		auto temp_node = all_nodes.front();
 		all_nodes.pop_front();
-		cur_node->m_idx = next_node_seq();
-		for (auto one_child : cur_node->m_children)
+		temp_node->m_idx = next_node_seq();
+		for (auto one_child : temp_node->m_children)
 		{
 			all_nodes.push_back(one_child);
 		}
