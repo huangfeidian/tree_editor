@@ -40,6 +40,9 @@ set(CMAKE_AUTORCC ON)
 find_package(spdlog CONFIG REQUIRED)
 INCLUDE_DIRECTORIES(${spdlog_include_dirs})
 
+find_package(fmt CONFIG REQUIRED)
+INCLUDE_DIRECTORIES(${fmt_include_dirs})
+
 # add json support
 find_package(nlohmann_json CONFIG REQUIRED)
 
