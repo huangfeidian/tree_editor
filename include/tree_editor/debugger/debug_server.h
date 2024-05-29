@@ -9,7 +9,7 @@
 
 namespace spiritsaway::tree_editor
 {
-	
+	using namespace boost;
 	class debug_server: public http_utils::http_server
 	{
 		debug_cmd_receiver m_cmd_queue;

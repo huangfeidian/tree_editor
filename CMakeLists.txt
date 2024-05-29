@@ -50,6 +50,8 @@ find_package(nlohmann_json CONFIG REQUIRED)
 find_package(magic_enum CONFIG REQUIRED)
 INCLUDE_DIRECTORIES(${magic_enum_include_dirs})
 
+find_package(Boost 1.71.0 REQUIRED COMPONENTS  system date_time)
+
 find_package(any_container CONFIG REQUIRED)
 
 add_library(tree_editor ${UI_FILES}  ${SHARE_SRC_FILES} ${SHARE_HEADER_FILES} ${EDITOR_SRC_FILES} ${EDITOR_HEADER_FILES})
