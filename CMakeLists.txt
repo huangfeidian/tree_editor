@@ -59,14 +59,14 @@ add_library(tree_editor ${UI_FILES}  ${SHARE_SRC_FILES} ${SHARE_HEADER_FILES} ${
 
 target_link_libraries(tree_editor PRIVATE Qt5::Widgets)
 target_link_libraries(tree_editor PUBLIC nlohmann_json::nlohmann_json any_container spdlog::spdlog)
-
+target_include_directories(tree_editor INTERFACE $<INSTALL_INTERFACE:include>)
 add_library(tree_debugger ${UI_FILES}  ${SHARE_SRC_FILES} ${SHARE_HEADER_FILES} ${DEBUGER_SRC_FILES} ${DEBUGER_HEADER_FILES})
 find_package(http_utils CONFIG REQUIRED)
 INCLUDE_DIRECTORIES(${http_utils_include_dirs})
 target_link_libraries(tree_debugger PRIVATE Qt5::Widgets)
 target_link_libraries(tree_debugger PUBLIC nlohmann_json::nlohmann_json any_container spdlog::spdlog)
 target_link_libraries(tree_debugger PUBLIC http_utils::http_server)
-
+target_include_directories(tree_debugger INTERFACE $<INSTALL_INTERFACE:include>)
 add_executable(path_require ${PROJECT_SOURCE_DIR}/include/tree_editor/common/dialogs/path_config_dialog.h ${PROJECT_SOURCE_DIR}/src/common/dialogs/path_config_dialog.cpp ${PROJECT_SOURCE_DIR}/test/path_require/path_require_test.cpp)
 target_link_libraries(path_require PUBLIC nlohmann_json::nlohmann_json PRIVATE Qt5::Widgets spdlog::spdlog)
 

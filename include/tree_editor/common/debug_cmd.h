@@ -7,7 +7,7 @@
 
 #include <nlohmann/json.hpp>
 #include <functional>
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #include <any_container/decode.h>
 #include <any_container/encode.h>
 
